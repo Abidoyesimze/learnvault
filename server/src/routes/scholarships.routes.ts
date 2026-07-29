@@ -2,6 +2,8 @@ import { Router } from "express"
 
 import {
 	applyForScholarship,
+	contributeToScholarship,
+	getProposalContributors,
 	getScholarshipMetrics,
 } from "../controllers/scholarships.controller"
 import { authMiddleware } from "../middleware/auth.middleware"
