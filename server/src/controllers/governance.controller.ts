@@ -94,6 +94,7 @@ function buildProposalSelect(viewerParamIndex?: number) {
 			p.title,
 			p.description,
 			p.amount,
+			p.current_funding,
 			p.votes_for,
 			p.votes_against,
 			p.status,
@@ -171,19 +172,33 @@ export async function getGovernanceProposalById(
 	}
 
 	try {
-		const result = await pool.query(
-			`${buildProposalSelect(viewerAddress ? 2 : undefined)}
-			 WHERE p.id = $1
-			 LIMIT 1`,
-			values,
-		)
+		const [proposalResult, contributorsResult] = await Promise.all([
+			pool.query(
+				`${buildProposalSelect(viewerAddress ? 2 : undefined)}
+				 WHERE p.id = $1
+				 LIMIT 1`,
+				values,
+			),
+			pool.query(
+				`SELECT donor_address, amount, tx_hash, created_at
+				 FROM scholarship_contributions
+				 WHERE proposal_id = $1
+				   AND verified = true
+				 ORDER BY created_at DESC
+				 LIMIT 20`,
+				[proposalId],
+			),
+		])
 
-		if (!result?.rows || result.rows.length === 0) {
+		if (!proposalResult?.rows || proposalResult.rows.length === 0) {
 			res.status(404).json({ error: "Proposal not found" })
 			return
 		}
 
-		res.status(200).json(result.rows[0])
+		res.status(200).json({
+			...proposalResult.rows[0],
+			contributors: contributorsResult.rows,
+		})
 	} catch {
 		res.status(500).json({ error: "Failed to fetch governance proposal" })
 	}

@@ -9,12 +9,20 @@ export type BackendProposalStatus =
 	| "queued"
 	| "rejected"
 
+export interface ContributorRecord {
+	donor_address: string
+	amount: number
+	tx_hash: string
+	created_at: string
+}
+
 export interface ProposalRecord {
 	id: number
 	title: string
 	description: string
 	authorAddress: string
 	amount: number
+	currentFunding: number
 	votesFor: bigint
 	votesAgainst: bigint
 	status: BackendProposalStatus
@@ -24,6 +32,7 @@ export interface ProposalRecord {
 	createdAt: string | null
 	userVoteSupport: boolean | null
 	isVotingOpen: boolean
+	contributors: ContributorRecord[]
 	displayStatus:
 		| "Voting Open"
 		| "Voting Closed"
@@ -64,6 +73,7 @@ interface ProposalApiRow {
 	title: string
 	description: string
 	amount: number | string
+	current_funding?: number | string | null
 	votes_for: number | string
 	votes_against: number | string
 	status: BackendProposalStatus
@@ -72,6 +82,7 @@ interface ProposalApiRow {
 	execution_ready_at: string | null
 	created_at: string | null
 	user_vote_support: boolean | null
+	contributors?: ContributorRecord[]
 }
 
 const parseBigInt = (value: number | string | null | undefined) => {
@@ -114,6 +125,12 @@ export const mapProposal = (row: ProposalApiRow): ProposalRecord => {
 			typeof row.amount === "number"
 				? row.amount
 				: Number.parseFloat(row.amount ?? "0"),
+		currentFunding:
+			row.current_funding == null
+				? 0
+				: typeof row.current_funding === "number"
+					? row.current_funding
+					: Number.parseFloat(row.current_funding),
 		votesFor: parseBigInt(row.votes_for),
 		votesAgainst: parseBigInt(row.votes_against),
 		status: row.status,
@@ -124,6 +141,7 @@ export const mapProposal = (row: ProposalApiRow): ProposalRecord => {
 		userVoteSupport:
 			typeof row.user_vote_support === "boolean" ? row.user_vote_support : null,
 		isVotingOpen: isVotingOpen(row.status, deadline),
+		contributors: row.contributors ?? [],
 		displayStatus: getProposalDisplayStatus({
 			status: row.status,
 			deadline,
@@ -374,5 +392,53 @@ export function useProposalVotes(proposalId: number | null, enabled = true) {
 		queryFn: () => fetchProposalVotes(proposalId as number),
 		enabled: proposalId !== null && enabled,
 		staleTime: 60 * 1000,
+	})
+}
+
+interface ContributePayload {
+	proposalId: number
+	donor_address: string
+	amount: number
+	tx_hash: string
+}
+
+export interface ContributeResult {
+	current_funding: number
+	fully_funded: boolean
+}
+
+export function useContribute() {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: async ({
+			proposalId,
+			donor_address,
+			amount,
+			tx_hash,
+		}: ContributePayload): Promise<ContributeResult> => {
+			const { getAuthToken } = await import("../util/auth")
+			const token = getAuthToken()
+			if (!token) throw new Error("You must be logged in to contribute")
+
+			const response = await fetch(
+				`${API_BASE}/api/scholarships/${proposalId}/contribute`,
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${token}`,
+					},
+					body: JSON.stringify({ donor_address, amount, tx_hash }),
+				},
+			)
+			return readJson<ContributeResult>(response)
+		},
+		onSuccess: (_data, variables) => {
+			void queryClient.invalidateQueries({
+				queryKey: ["proposal", variables.proposalId],
+			})
+			void queryClient.invalidateQueries({ queryKey: ["proposals"] })
+		},
 	})
 }
