@@ -5,8 +5,9 @@ import BookmarkButton from "../components/BookmarkButton"
 import CourseCategoryBadge from "../components/CourseCategoryBadge"
 import { CourseFilter } from "../components/CourseFilter"
 import Pagination from "../components/Pagination"
-import SponsorLogosForTrack from "../components/SponsorLogosForTrack"
+import RecommendationsCarousel from "../components/RecommendationsCarousel"
 import { CourseCardSkeleton } from "../components/skeletons/CourseCardSkeleton"
+import SponsorLogosForTrack from "../components/SponsorLogosForTrack"
 import { EmptyState } from "../components/states/emptyState"
 import { ErrorState } from "../components/states/errorState"
 import { useCourses } from "../hooks/useCourses"
@@ -35,7 +36,8 @@ const Courses: React.FC = () => {
 	const difficulty = searchParams.get("difficulty") ?? ""
 	const track = searchParams.get("track") ?? ""
 	const parsedPage = parseInt(searchParams.get("page") || "1", 10)
-	const currentPage = Number.isNaN(parsedPage) || parsedPage < 1 ? 1 : parsedPage
+	const currentPage =
+		Number.isNaN(parsedPage) || parsedPage < 1 ? 1 : parsedPage
 
 	useEffect(() => {
 		const timer = setTimeout(() => {
@@ -137,7 +139,10 @@ const Courses: React.FC = () => {
 	const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE))
 	const safePage = Math.min(currentPage, totalPages)
 	const startIndex = (safePage - 1) * ITEMS_PER_PAGE
-	const paginatedCourses = filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE)
+	const paginatedCourses = filtered.slice(
+		startIndex,
+		startIndex + ITEMS_PER_PAGE,
+	)
 
 	return (
 		<div className="container mx-auto px-4 py-12">
@@ -153,6 +158,10 @@ const Courses: React.FC = () => {
 					hands-on progress with a clear first milestone.
 				</p>
 			</header>
+
+			<div className="mb-12">
+				<RecommendationsCarousel />
+			</div>
 
 			<CourseFilter
 				search={searchInput}
@@ -221,10 +230,19 @@ const Courses: React.FC = () => {
 									{course.ratingSummary && course.ratingSummary.count > 0 ? (
 										<div className="mb-5 flex items-center gap-2 text-xs text-white/70">
 											<span className="text-yellow-300">
-												{"★".repeat(Math.max(1, Math.min(5, Math.round(course.ratingSummary.average))))}
+												{"★".repeat(
+													Math.max(
+														1,
+														Math.min(
+															5,
+															Math.round(course.ratingSummary.average),
+														),
+													),
+												)}
 											</span>
 											<span>
-												{course.ratingSummary.average.toFixed(1)} ({course.ratingSummary.count})
+												{course.ratingSummary.average.toFixed(1)} (
+												{course.ratingSummary.count})
 											</span>
 										</div>
 									) : null}

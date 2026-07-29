@@ -1,3 +1,4 @@
+import { TrendingUp, Award, Zap, BarChart3, HelpCircle } from "lucide-react"
 import {
 	Area,
 	CartesianGrid,
@@ -10,10 +11,10 @@ import {
 	YAxis,
 } from "recharts"
 import { useEarningsAnalytics } from "../../hooks/useEarningsAnalytics"
-import { TrendingUp, Award, Zap, BarChart3, HelpCircle } from "lucide-react"
 
 export function EarningsAnalytics() {
-	const { data, summary, interval, setInterval, isLoading } = useEarningsAnalytics()
+	const { data, summary, interval, setInterval, isLoading } =
+		useEarningsAnalytics()
 
 	const formatter = new Intl.NumberFormat("en-US", {
 		style: "currency",
@@ -49,14 +50,19 @@ export function EarningsAnalytics() {
 							Earnings & Payout Timelines
 						</h2>
 						<p className="text-white/40 text-xs sm:text-sm font-medium">
-							Track the historical USDC volume, gas overhead, and net educator/scholar royalties.
+							Track the historical USDC volume, gas overhead, and net
+							educator/scholar royalties.
 						</p>
 					</div>
 
 					{/* Time interval selectors */}
 					<div className="flex gap-1.5 p-1 bg-white/5 border border-white/5 rounded-2xl shrink-0">
 						{(["7d", "30d", "ytd"] as const).map((opt) => {
-							const labels = { "7d": "7 Days", "30d": "30 Days", "ytd": "Year-To-Date" }
+							const labels = {
+								"7d": "7 Days",
+								"30d": "30 Days",
+								ytd: "Year-To-Date",
+							}
 							const isActive = interval === opt
 							return (
 								<button
@@ -121,9 +127,11 @@ export function EarningsAnalytics() {
 				</div>
 
 				{/* Chart Plot Visualizer */}
-				<div className={`h-[350px] w-full bg-white/[0.01] border border-white/5 rounded-2xl p-4 transition-opacity duration-300 relative ${
-					isLoading ? "opacity-50 pointer-events-none" : "opacity-100"
-				}`}>
+				<div
+					className={`h-[350px] w-full bg-white/[0.01] border border-white/5 rounded-2xl p-4 transition-opacity duration-300 relative ${
+						isLoading ? "opacity-50 pointer-events-none" : "opacity-100"
+					}`}
+				>
 					{isLoading && (
 						<div className="absolute inset-0 flex items-center justify-center bg-black/10 backdrop-blur-xs rounded-2xl z-20">
 							<div className="animate-pulse text-xs font-black uppercase text-brand-cyan tracking-widest">
@@ -133,7 +141,10 @@ export function EarningsAnalytics() {
 					)}
 
 					<ResponsiveContainer width="100%" height="100%">
-						<ComposedChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+						<ComposedChart
+							data={data}
+							margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+						>
 							<defs>
 								<linearGradient id="colorVolume" x1="0" y1="0" x2="0" y2="1">
 									<stop offset="5%" stopColor="#00d2ff" stopOpacity={0.2} />
@@ -144,7 +155,11 @@ export function EarningsAnalytics() {
 									<stop offset="95%" stopColor="#00ff80" stopOpacity={0.0} />
 								</linearGradient>
 							</defs>
-							<CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+							<CartesianGrid
+								strokeDasharray="3 3"
+								vertical={false}
+								stroke="rgba(255,255,255,0.05)"
+							/>
 							<XAxis
 								dataKey="date"
 								stroke="rgba(255,255,255,0.3)"
@@ -221,20 +236,29 @@ function CustomTooltip({ active, payload, label }: any) {
 			</p>
 			<div className="space-y-1.5 font-normal">
 				{payload.map((entry: any) => {
-					const labelColor = entry.name === "Volume" 
-						? "text-brand-cyan" 
-						: entry.name === "Net Royalties" 
-							? "text-brand-emerald" 
-							: "text-brand-purple"
+					const labelColor =
+						entry.name === "Volume"
+							? "text-brand-cyan"
+							: entry.name === "Net Royalties"
+								? "text-brand-emerald"
+								: "text-brand-purple"
 
 					return (
-						<div key={entry.name} className="flex justify-between items-center gap-6">
+						<div
+							key={entry.name}
+							className="flex justify-between items-center gap-6"
+						>
 							<span className="text-white/40 flex items-center gap-1.5">
-								<span className={`w-1.5 h-1.5 rounded-full ${entry.name === "Volume" ? "bg-brand-cyan" : entry.name === "Net Royalties" ? "bg-brand-emerald" : "bg-brand-purple"}`} />
+								<span
+									className={`w-1.5 h-1.5 rounded-full ${entry.name === "Volume" ? "bg-brand-cyan" : entry.name === "Net Royalties" ? "bg-brand-emerald" : "bg-brand-purple"}`}
+								/>
 								{entry.name}
 							</span>
 							<span className={`font-bold font-mono ${labelColor}`}>
-								${entry.value.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+								$
+								{entry.value.toLocaleString(undefined, {
+									minimumFractionDigits: 2,
+								})}
 							</span>
 						</div>
 					)

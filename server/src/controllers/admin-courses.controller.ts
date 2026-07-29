@@ -71,7 +71,7 @@ const normalizeCsvRow = (row: Record<string, string>) => ({
 	published:
 		row.published?.toLowerCase() === "true" ||
 		row.published?.toLowerCase() === "yes" ||
-		row.published?.toLowerCase() === "1"
+		row.published?.toLowerCase() === "1",
 })
 
 const getClient = async () => {
@@ -127,7 +127,7 @@ export const bulkImportCourses = async (
 		for (const [index, row] of courses.entries()) {
 			if (!row || typeof row !== "object") {
 				rowErrors.push(
-					buildResult(index, String(row?.slug ?? `row-${index + 1}`), false, ["Invalid row format"]),
+					buildResult(index, `row-${index + 1}`, false, ["Invalid row format"]),
 				)
 				continue
 			}
@@ -139,19 +139,17 @@ export const bulkImportCourses = async (
 						.string()
 						.trim()
 						.min(1, "slug is required")
-						.regex(/^[a-zA-Z0-9-_]+$/, "slug may contain only letters, numbers, hyphens, and underscores"),
+						.regex(
+							/^[a-zA-Z0-9-_]+$/,
+							"slug may contain only letters, numbers, hyphens, and underscores",
+						),
 					track: z.string().trim().min(1, "track is required"),
 					difficulty: z
 						.string()
 						.trim()
 						.transform((value) => value.toLowerCase()),
 					description: z.string().optional(),
-					coverImage: z
-						.string()
-						.trim()
-						.min(1)
-						.optional()
-						.nullable(),
+					coverImage: z.string().trim().min(1).optional().nullable(),
 					published: z.boolean().optional(),
 				})
 				.strict()
@@ -165,9 +163,9 @@ export const bulkImportCourses = async (
 			} else {
 				if (!difficultyValues.has(validation.data.difficulty)) {
 					errors.push(
-					`difficulty must be one of: ${Array.from(difficultyValues).join(", ")}`,
-				)
-			}
+						`difficulty must be one of: ${Array.from(difficultyValues).join(", ")}`,
+					)
+				}
 				if (errors.length === 0) {
 					normalizedRows.push(validation.data)
 				}
@@ -207,7 +205,9 @@ export const bulkImportCourses = async (
 			.map((row) => row.row - 1)
 
 		if (rowsToInsert.length > 0) {
-			const slugs = rowsToInsert.map((index) => normalizedRows[index].slug.toLowerCase())
+			const slugs = rowsToInsert.map((index) =>
+				normalizedRows[index].slug.toLowerCase(),
+			)
 			const existing = await pool.query(
 				`SELECT slug FROM courses WHERE LOWER(slug) = ANY($1::text[])`,
 				[slugs],
@@ -292,7 +292,9 @@ export const bulkImportCourses = async (
 		})
 	} catch (error) {
 		if (error instanceof AppError) {
-			res.status(error.statusCode).json({ errors: error.details ?? [{ message: error.message }] })
+			res
+				.status(error.statusCode)
+				.json({ errors: error.details ?? [{ message: error.message }] })
 			return
 		}
 

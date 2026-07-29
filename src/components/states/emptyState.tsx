@@ -26,13 +26,12 @@ export function EmptyState({
 
 	return (
 		<div className="flex flex-col items-center justify-center py-16 text-center">
-			{Icon && (
-				isIconString ? (
+			{Icon &&
+				(isIconString ? (
 					<div className="text-4xl mb-4">{Icon}</div>
 				) : (
 					<Icon className="h-12 w-12 text-muted-foreground mb-4" />
-				)
-			)}
+				))}
 
 			<h3 className="text-lg font-semibold">{title}</h3>
 

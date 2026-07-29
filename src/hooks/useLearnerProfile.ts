@@ -1,8 +1,14 @@
 import { useQuery } from "@tanstack/react-query"
 import { useWallet } from "./useWallet"
 
+export interface LinkedWalletInfo {
+	address: string
+	isPrimary?: boolean
+}
+
 export interface LearnerProfile {
 	address: string
+	wallets?: LinkedWalletInfo[]
 }
 
 /**

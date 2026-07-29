@@ -85,24 +85,34 @@ export default function Dao() {
 				</p>
 			</header>
 
-        {/* Governance Parameters Card */}
-        <div className="glass-card p-8 rounded-[2.5rem] border border-white/5 mb-12">
-          <p className="text-[10px] uppercase font-black text-white/30 tracking-[2px] mb-2">Governance Parameters</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="text-center">
-              <p className="text-xs text-white/30 uppercase">Quorum (GOV)</p>
-              <p className="text-xl font-black text-brand-cyan">{formatGov(quorum.toString(), locale)}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-xs text-white/30 uppercase">Approval BPS</p>
-              <p className="text-xl font-black text-brand-purple">{approvalBps.toString()}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-xs text-white/30 uppercase">Voting Period (ledgers)</p>
-              <p className="text-xl font-black text-brand-emerald">{votingPeriod.toLocaleString(locale)}</p>
-            </div>
-          </div>
-        </div>
+			{/* Governance Parameters Card */}
+			<div className="glass-card p-8 rounded-[2.5rem] border border-white/5 mb-12">
+				<p className="text-[10px] uppercase font-black text-white/30 tracking-[2px] mb-2">
+					Governance Parameters
+				</p>
+				<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+					<div className="text-center">
+						<p className="text-xs text-white/30 uppercase">Quorum (GOV)</p>
+						<p className="text-xl font-black text-brand-cyan">
+							{formatGov(quorum.toString(), locale)}
+						</p>
+					</div>
+					<div className="text-center">
+						<p className="text-xs text-white/30 uppercase">Approval BPS</p>
+						<p className="text-xl font-black text-brand-purple">
+							{approvalBps.toString()}
+						</p>
+					</div>
+					<div className="text-center">
+						<p className="text-xs text-white/30 uppercase">
+							Voting Period (ledgers)
+						</p>
+						<p className="text-xl font-black text-brand-emerald">
+							{votingPeriod.toLocaleString(locale)}
+						</p>
+					</div>
+				</div>
+			</div>
 
 			{/* Stats row */}
 			<div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">

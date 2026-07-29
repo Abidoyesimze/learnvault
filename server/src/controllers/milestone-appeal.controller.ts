@@ -8,6 +8,7 @@ import { type AuthRequest } from "../middleware/auth.middleware"
 import { createEmailService } from "../services/email.service"
 import { deliverNotificationChannels } from "../services/notification-delivery.service"
 import { stellarContractService } from "../services/stellar-contract.service"
+import { recordMilestoneActivity } from "../services/streak.service"
 
 const log = logger.child({ module: "milestone-appeal" })
 
@@ -86,12 +87,10 @@ export async function appealMilestone(
 		// from the frontend wallet directly. Backend records the appeal in DB only.
 		const updated = await milestoneStore.submitAppeal(id, sanitizedReason)
 		if (!updated) {
-			res
-				.status(409)
-				.json({
-					error:
-						"Appeal could not be submitted. The report may no longer be in rejected state.",
-				})
+			res.status(409).json({
+				error:
+					"Appeal could not be submitted. The report may no longer be in rejected state.",
+			})
 			return
 		}
 
@@ -191,11 +190,9 @@ export async function resolveAppeal(
 			return
 		}
 		if (report.status !== "appealed") {
-			res
-				.status(409)
-				.json({
-					error: `Report status is "${report.status}", expected "appealed"`,
-				})
+			res.status(409).json({
+				error: `Report status is "${report.status}", expected "appealed"`,
+			})
 			return
 		}
 
@@ -217,15 +214,21 @@ export async function resolveAppeal(
 						{ err: contractErr },
 						"resolve_appeal verify_milestone contract call failed",
 					)
-					res
-						.status(502)
-						.json({
-							error: "Contract call failed. Appeal resolution not committed.",
-						})
+					res.status(502).json({
+						error: "Contract call failed. Appeal resolution not committed.",
+					})
 					return
 				}
 			}
 			await milestoneStore.updateReportStatus(id, "approved")
+			try {
+				await recordMilestoneActivity(report.scholar_address)
+			} catch (streakErr) {
+				log.error(
+					{ err: streakErr },
+					"streak activity update failed (non-blocking)",
+				)
+			}
 		} else {
 			// Final rejection: emit on-chain rejection event (non-blocking)
 			if (hasStellarMilestoneCredentials()) {

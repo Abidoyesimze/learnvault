@@ -33,7 +33,6 @@ interface NFTMetadata {
 	[key: string]: any
 }
 
-
 interface CreateMetadataRequest {
 	course_id: string
 	learner_address: string
@@ -49,10 +48,7 @@ let coursesCache: CourseMetadata[] | null = null
 async function loadCourses(): Promise<CourseMetadata[]> {
 	if (coursesCache) return coursesCache
 
-	const coursesPath = path.resolve(
-		process.cwd(),
-		"content/courses/index.json",
-	)
+	const coursesPath = path.resolve(process.cwd(), "content/courses/index.json")
 	const coursesData = await fs.readFile(coursesPath, "utf-8")
 	const courses = JSON.parse(coursesData) as Array<{
 		id: string

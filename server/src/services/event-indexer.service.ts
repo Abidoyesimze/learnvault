@@ -1,20 +1,18 @@
 import { rpc as StellarRpc } from "@stellar/stellar-sdk"
-import { Pool } from "pg"
+import { pool } from "../db/index"
+import { createNotification } from "../db/notifications-store"
+import { invalidateApiResponseCacheType } from "../lib/api-response-cache"
 import {
 	SOROBAN_RPC_URL,
 	INDEXER_CONFIG,
 	getPollingTargets,
 } from "../lib/event-config"
-import { getRpcCache, CacheKey } from "../lib/rpc-cache"
 import { leaderboardEmitter } from "../lib/leaderboard-emitter"
-import { invalidateApiResponseCacheType } from "../lib/api-response-cache"
 import { logger } from "../lib/logger"
-import { createNotification } from "../db/notifications-store"
+import { getRpcCache, CacheKey } from "../lib/rpc-cache"
 import { deliverNotificationChannels } from "./notification-delivery.service"
 
 const log = logger.child({ module: "indexer" })
-
-const pool = new Pool({ connectionString: process.env.DATABASE_URL! })
 
 const rpc = new StellarRpc.Server(SOROBAN_RPC_URL)
 
@@ -93,7 +91,15 @@ async function invalidateCacheForEvent(
 	data: Record<string, unknown>,
 ): Promise<void> {
 	const cache = getRpcCache()
-	const addr = typeof data.address === "string" ? data.address : null
+	const value = (
+		data.value && typeof data.value === "object" ? data.value : {}
+	) as Record<string, unknown>
+	const addr =
+		typeof data.address === "string"
+			? data.address
+			: typeof value.address === "string"
+				? value.address
+				: null
 
 	switch (topic) {
 		case "LearnToken_Mint":
@@ -105,7 +111,11 @@ async function invalidateCacheForEvent(
 		case "CourseMilestone_MilestoneComplete":
 			if (addr) {
 				const courseId =
-					typeof data.courseId === "string" ? Number(data.courseId) : null
+					typeof data.courseId === "string"
+						? Number(data.courseId)
+						: typeof value.courseId === "string"
+							? Number(value.courseId)
+							: null
 				if (courseId !== null && !isNaN(courseId)) {
 					await cache.invalidate(CacheKey.enrollment(addr, courseId))
 				}
@@ -120,9 +130,54 @@ async function invalidateCacheForEvent(
 			break
 		case "ScholarshipTreasury_VoteCastEvent": {
 			const voter =
-				typeof data.voter === "string" ? data.voter : null
+				typeof data.voter === "string"
+					? data.voter
+					: typeof value.voter === "string"
+						? value.voter
+						: null
 			if (voter) {
 				await cache.invalidate(CacheKey.votingPower(voter))
+			}
+			break
+		}
+		case "ScholarNFT::minted": {
+			const tokenId =
+				typeof data.token_id === "string"
+					? Number(data.token_id)
+					: typeof value.token_id === "string"
+						? Number(value.token_id)
+						: null
+			const owner =
+				typeof data.owner === "string"
+					? data.owner
+					: typeof value.owner === "string"
+						? value.owner
+						: null
+			if (tokenId !== null && !isNaN(tokenId)) {
+				await cache.invalidate(CacheKey.verifyCredential(tokenId))
+			}
+			if (owner) {
+				await cache.invalidate(CacheKey.verifyAddress(owner))
+			}
+			break
+		}
+		case "ScholarNFT::revoked": {
+			const tokenId =
+				typeof data.token_id === "string"
+					? Number(data.token_id)
+					: typeof value.token_id === "string"
+						? Number(value.token_id)
+						: null
+			if (tokenId !== null && !isNaN(tokenId)) {
+				const res = await pool.query(
+					"SELECT scholar_address FROM scholar_nfts WHERE token_id = $1",
+					[tokenId],
+				)
+				const scholar = res.rows[0]?.scholar_address
+				await cache.invalidate(CacheKey.verifyCredential(tokenId))
+				if (scholar) {
+					await cache.invalidate(CacheKey.verifyAddress(scholar))
+				}
 			}
 			break
 		}
@@ -202,7 +257,10 @@ export async function processWebhookEvents(
 				contractMaxLedger.set(ev.contract, ledger)
 			}
 		} catch (err) {
-			log.error({ err, eventId: ev.id, contract: ev.contract }, "Webhook event error")
+			log.error(
+				{ err, eventId: ev.id, contract: ev.contract },
+				"Webhook event error",
+			)
 			skipped++
 		}
 	}
@@ -211,7 +269,10 @@ export async function processWebhookEvents(
 		await updateIndexerState(contract, lastLedger)
 	}
 
-	log.info({ inserted, skipped, count: events.length }, "Webhook events processed")
+	log.info(
+		{ inserted, skipped, count: events.length },
+		"Webhook events processed",
+	)
 	return { inserted, skipped }
 }
 

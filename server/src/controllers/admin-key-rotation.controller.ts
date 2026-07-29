@@ -71,7 +71,8 @@ export function createAdminKeyRotationController(
 					return
 				}
 
-				const status = await keyRotationService.checkRotationStatus(adminAddress)
+				const status =
+					await keyRotationService.checkRotationStatus(adminAddress)
 
 				res.status(200).json({
 					lastRotated: status.lastRotated,

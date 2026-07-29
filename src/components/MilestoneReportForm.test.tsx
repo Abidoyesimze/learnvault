@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
+import { describe, it, expect, vi, beforeEach } from "vitest"
+import { type MilestoneReportFormValues } from "../types/milestone"
 import MilestoneReportForm from "./MilestoneReportForm"
-import type { MilestoneReportFormValues } from "../types/milestone"
 
 describe("MilestoneReportForm", () => {
 	const mockOnSubmit = vi.fn()
@@ -12,11 +12,11 @@ describe("MilestoneReportForm", () => {
 	})
 
 	it("renders the form with all required fields", () => {
-		render(
-			<MilestoneReportForm isSubmitting={false} onSubmit={mockOnSubmit} />,
-		)
+		render(<MilestoneReportForm isSubmitting={false} onSubmit={mockOnSubmit} />)
 
-		expect(screen.getByText("Submit a milestone completion report")).toBeInTheDocument()
+		expect(
+			screen.getByText("Submit a milestone completion report"),
+		).toBeInTheDocument()
 		expect(screen.getByLabelText("Course ID")).toBeInTheDocument()
 		expect(screen.getByLabelText("Milestone number")).toBeInTheDocument()
 		expect(screen.getByLabelText("Milestone notes")).toBeInTheDocument()
@@ -35,7 +35,7 @@ describe("MilestoneReportForm", () => {
 		)
 
 		const submitButton = screen.getByRole("button", { name: /Submit report/ })
-		expect(submitButton).not.toBeDisabled()
+		expect(submitButton).toBeEnabled()
 
 		rerender(
 			<MilestoneReportForm isSubmitting={true} onSubmit={mockOnSubmit} />,
@@ -47,24 +47,18 @@ describe("MilestoneReportForm", () => {
 
 	it("validates that course ID is required", async () => {
 		const user = userEvent.setup()
-		render(
-			<MilestoneReportForm isSubmitting={false} onSubmit={mockOnSubmit} />,
-		)
+		render(<MilestoneReportForm isSubmitting={false} onSubmit={mockOnSubmit} />)
 
 		const submitButton = screen.getByRole("button", { name: /Submit report/ })
 		await user.click(submitButton)
 
-		expect(
-			screen.getByText("Course ID is required."),
-		).toBeInTheDocument()
+		expect(screen.getByText("Course ID is required.")).toBeInTheDocument()
 		expect(mockOnSubmit).not.toHaveBeenCalled()
 	})
 
 	it("validates that milestone ID is required and must be a number", async () => {
 		const user = userEvent.setup()
-		render(
-			<MilestoneReportForm isSubmitting={false} onSubmit={mockOnSubmit} />,
-		)
+		render(<MilestoneReportForm isSubmitting={false} onSubmit={mockOnSubmit} />)
 
 		const courseIdInput = screen.getByPlaceholderText("stellar-basics")
 		await user.type(courseIdInput, "stellar-basics")
@@ -80,9 +74,7 @@ describe("MilestoneReportForm", () => {
 
 	it("validates that at least one evidence field is required", async () => {
 		const user = userEvent.setup()
-		render(
-			<MilestoneReportForm isSubmitting={false} onSubmit={mockOnSubmit} />,
-		)
+		render(<MilestoneReportForm isSubmitting={false} onSubmit={mockOnSubmit} />)
 
 		const courseIdInput = screen.getByPlaceholderText("stellar-basics")
 		const milestoneInput = screen.getByPlaceholderText("1")
@@ -103,9 +95,7 @@ describe("MilestoneReportForm", () => {
 
 	it("validates that terms must be accepted", async () => {
 		const user = userEvent.setup()
-		render(
-			<MilestoneReportForm isSubmitting={false} onSubmit={mockOnSubmit} />,
-		)
+		render(<MilestoneReportForm isSubmitting={false} onSubmit={mockOnSubmit} />)
 
 		const courseIdInput = screen.getByPlaceholderText("stellar-basics")
 		const milestoneInput = screen.getByPlaceholderText("1")
@@ -130,9 +120,7 @@ describe("MilestoneReportForm", () => {
 
 	it("successfully submits the form with valid data", async () => {
 		const user = userEvent.setup()
-		render(
-			<MilestoneReportForm isSubmitting={false} onSubmit={mockOnSubmit} />,
-		)
+		render(<MilestoneReportForm isSubmitting={false} onSubmit={mockOnSubmit} />)
 
 		const courseIdInput = screen.getByPlaceholderText("stellar-basics")
 		const milestoneInput = screen.getByPlaceholderText("1")
@@ -163,9 +151,7 @@ describe("MilestoneReportForm", () => {
 
 	it("submits with GitHub evidence link", async () => {
 		const user = userEvent.setup()
-		render(
-			<MilestoneReportForm isSubmitting={false} onSubmit={mockOnSubmit} />,
-		)
+		render(<MilestoneReportForm isSubmitting={false} onSubmit={mockOnSubmit} />)
 
 		const courseIdInput = screen.getByPlaceholderText("stellar-basics")
 		const milestoneInput = screen.getByPlaceholderText("1")
@@ -191,9 +177,7 @@ describe("MilestoneReportForm", () => {
 
 	it("submits with IPFS CID evidence", async () => {
 		const user = userEvent.setup()
-		render(
-			<MilestoneReportForm isSubmitting={false} onSubmit={mockOnSubmit} />,
-		)
+		render(<MilestoneReportForm isSubmitting={false} onSubmit={mockOnSubmit} />)
 
 		const courseIdInput = screen.getByPlaceholderText("stellar-basics")
 		const milestoneInput = screen.getByPlaceholderText("1")
@@ -221,9 +205,7 @@ describe("MilestoneReportForm", () => {
 		const user = userEvent.setup()
 		mockOnSubmit.mockResolvedValueOnce(undefined)
 
-		render(
-			<MilestoneReportForm isSubmitting={false} onSubmit={mockOnSubmit} />,
-		)
+		render(<MilestoneReportForm isSubmitting={false} onSubmit={mockOnSubmit} />)
 
 		const courseIdInput = screen.getByPlaceholderText(
 			"stellar-basics",
@@ -255,9 +237,7 @@ describe("MilestoneReportForm", () => {
 		const error = new Error("Network error")
 		mockOnSubmit.mockRejectedValueOnce(error)
 
-		render(
-			<MilestoneReportForm isSubmitting={false} onSubmit={mockOnSubmit} />,
-		)
+		render(<MilestoneReportForm isSubmitting={false} onSubmit={mockOnSubmit} />)
 
 		const courseIdInput = screen.getByPlaceholderText("stellar-basics")
 		const milestoneInput = screen.getByPlaceholderText("1")
@@ -281,22 +261,16 @@ describe("MilestoneReportForm", () => {
 
 	it("clears error message when user starts typing", async () => {
 		const user = userEvent.setup()
-		render(
-			<MilestoneReportForm isSubmitting={false} onSubmit={mockOnSubmit} />,
-		)
+		render(<MilestoneReportForm isSubmitting={false} onSubmit={mockOnSubmit} />)
 
 		const submitButton = screen.getByRole("button", { name: /Submit report/ })
 		await user.click(submitButton)
 
-		expect(
-			screen.getByText("Course ID is required."),
-		).toBeInTheDocument()
+		expect(screen.getByText("Course ID is required.")).toBeInTheDocument()
 
 		const courseIdInput = screen.getByPlaceholderText("stellar-basics")
 		await user.type(courseIdInput, "stellar-basics")
 
-		expect(
-			screen.queryByText("Course ID is required."),
-		).not.toBeInTheDocument()
+		expect(screen.queryByText("Course ID is required.")).not.toBeInTheDocument()
 	})
 })

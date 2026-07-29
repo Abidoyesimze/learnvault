@@ -3,9 +3,9 @@ import React, { lazy, Suspense } from "react"
 import { Helmet } from "react-helmet"
 import { Link } from "react-router-dom"
 import DeferredSection from "../components/DeferredSection"
-import { useWallet } from "../hooks/useWallet"
 import { useEnrolledCourses } from "../hooks/useCourses"
 import { useImpactWidgetData } from "../hooks/useImpactMetrics"
+import { useWallet } from "../hooks/useWallet"
 
 const MilestoneTracker = lazy(() =>
 	import("../components/MilestoneTracker").then((module) => ({
@@ -70,7 +70,8 @@ const ALUMNI_SPOTLIGHT = [
 		cohort: "Backend Engineering Cohort",
 		year: "2025",
 		scholarshipAmount: "4,000 USDC",
-		outcome: "Now shipping smart contract audits at an African fintech startup.",
+		outcome:
+			"Now shipping smart contract audits at an African fintech startup.",
 		quote:
 			"The milestone-based scholarship made me accountable and gave me runway to focus on mastery.",
 	},
@@ -79,7 +80,8 @@ const ALUMNI_SPOTLIGHT = [
 		cohort: "Frontend Product Cohort",
 		year: "2025",
 		scholarshipAmount: "3,200 USDC",
-		outcome: "Built an open-source design system now used by three community DAOs.",
+		outcome:
+			"Built an open-source design system now used by three community DAOs.",
 		quote:
 			"LearnVault turned my portfolio into verified on-chain proof that employers trusted instantly.",
 	},
@@ -175,7 +177,9 @@ const Home: React.FC = () => {
 							<h2 className="text-2xl font-black">Real on-chain impact</h2>
 						</div>
 						{isLoadingImpact && (
-							<p className="text-sm text-white/50">Loading platform statistics…</p>
+							<p className="text-sm text-white/50">
+								Loading platform statistics…
+							</p>
 						)}
 					</div>
 					<div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-6 text-center">
@@ -316,24 +320,19 @@ const Home: React.FC = () => {
 					<div className="flex items-center gap-3">
 						<Icon.Users01 size="lg" className="text-brand-cyan shrink-0" />
 						<div>
-							<h2 className="text-2xl font-black">Scholarship Alumni Spotlight</h2>
+							<h2 className="text-2xl font-black">
+								Scholarship Alumni Spotlight
+							</h2>
 							<p className="text-white/45 text-sm mt-1 max-w-2xl">
-								Stories from scholars who completed tracks, secured milestone funding,
-								and are now building real-world impact.
+								Stories from scholars who completed tracks, secured milestone
+								funding, and are now building real-world impact.
 							</p>
 						</div>
 					</div>
 
 					<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 						{ALUMNI_SPOTLIGHT.map(
-							({
-								name,
-								cohort,
-								year,
-								scholarshipAmount,
-								outcome,
-								quote,
-							}) => (
+							({ name, cohort, year, scholarshipAmount, outcome, quote }) => (
 								<article
 									key={name}
 									className="glass-card rounded-3xl border border-white/10 p-7 flex flex-col gap-6 hover:border-brand-cyan/30 transition-colors"
@@ -356,11 +355,16 @@ const Home: React.FC = () => {
 
 									<div className="space-y-2 text-sm">
 										<p className="text-white/55">
-											<span className="text-white/75 font-semibold">Scholarship:</span>{" "}
+											<span className="text-white/75 font-semibold">
+												Scholarship:
+											</span>{" "}
 											{scholarshipAmount}
 										</p>
 										<p className="text-white/55">
-											<span className="text-white/75 font-semibold">Outcome:</span> {outcome}
+											<span className="text-white/75 font-semibold">
+												Outcome:
+											</span>{" "}
+											{outcome}
 										</p>
 									</div>
 								</article>

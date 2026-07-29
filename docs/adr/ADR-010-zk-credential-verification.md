@@ -7,8 +7,10 @@
 Issue `#756` requires LearnVault V3 to support private credential assertions:
 
 - A learner can prove course completion without revealing full wallet history.
-- A learner can prove a reputation threshold is met (`>= N`) without exposing exact score.
-- Verification must include replay protection and be practical for Stellar-integrated flows.
+- A learner can prove a reputation threshold is met (`>= N`) without exposing
+  exact score.
+- Verification must include replay protection and be practical for
+  Stellar-integrated flows.
 
 ## Research: Candidate Libraries
 
@@ -23,7 +25,8 @@ Issue `#756` requires LearnVault V3 to support private credential assertions:
 
 - Better long-term for native Rust verifier paths.
 - Strong cryptographic flexibility.
-- Trade-off: slower onboarding for frontend/backend teams and longer time-to-first proof.
+- Trade-off: slower onboarding for frontend/backend teams and longer
+  time-to-first proof.
 
 ### Option C: Noir (`nargo`) + Barretenberg
 
@@ -35,9 +38,12 @@ Issue `#756` requires LearnVault V3 to support private credential assertions:
 
 Adopt a phased approach:
 
-1. **Phase 1 (this PR)**: ship a prototype verification API with proof-integrity and nullifier checks so app integration can proceed.
-2. **Phase 2**: replace prototype verifier with Groth16 verifier (`snarkjs`) and fixed public signal schema.
-3. **Phase 3**: add on-chain verification path where cost is acceptable; otherwise keep verification off-chain and anchor attestations on-chain.
+1. **Phase 1 (this PR)**: ship a prototype verification API with proof-integrity
+   and nullifier checks so app integration can proceed.
+2. **Phase 2**: replace prototype verifier with Groth16 verifier (`snarkjs`) and
+   fixed public signal schema.
+3. **Phase 3**: add on-chain verification path where cost is acceptable;
+   otherwise keep verification off-chain and anchor attestations on-chain.
 
 ## Claims Covered
 
@@ -50,8 +56,10 @@ The initial claim schema supports:
 ## Verification Cost Estimate
 
 - **Off-chain verification**: low/acceptable for API latency targets.
-- **On-chain verification (Soroban custom verifier)**: expected to be expensive in instruction budget and should be limited to high-value flows.
-- **Recommended**: verify off-chain, persist attestation hash, optionally checkpoint on-chain.
+- **On-chain verification (Soroban custom verifier)**: expected to be expensive
+  in instruction budget and should be limited to high-value flows.
+- **Recommended**: verify off-chain, persist attestation hash, optionally
+  checkpoint on-chain.
 
 ## Consequences
 

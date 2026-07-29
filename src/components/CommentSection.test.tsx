@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import CommentSection, { type Comment } from "./CommentSection"
 
 // Mock the hooks
@@ -203,7 +203,7 @@ describe("CommentSection", () => {
 		const textarea = screen.getByPlaceholderText(/Share your thoughts/)
 		await user.type(textarea, "Test comment")
 
-		expect(postButton).not.toBeDisabled()
+		expect(postButton).toBeEnabled()
 	})
 
 	it("shows error when posting without authentication", async () => {
@@ -256,7 +256,9 @@ describe("CommentSection", () => {
 		await user.click(postButton)
 
 		await waitFor(() => {
-			expect(screen.getByText("Comment posted successfully.")).toBeInTheDocument()
+			expect(
+				screen.getByText("Comment posted successfully."),
+			).toBeInTheDocument()
 		})
 
 		// Verify the fetch was called with correct parameters

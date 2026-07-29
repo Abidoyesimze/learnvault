@@ -32,10 +32,7 @@ jest.mock("../services/smile-identity.service", () => ({
 	submitBiometricVerification: submitBiometricMock,
 }))
 
-import {
-	generateEmailToken,
-	verifyEmailToken,
-} from "../services/email-verification.service"
+import { type Request, type Response } from "express"
 import {
 	initiateVerification,
 	confirmVerification,
@@ -44,8 +41,11 @@ import {
 	getSybilScore,
 	kycWebhook,
 } from "../controllers/anti-sybil.controller"
-import type { AuthRequest } from "../middleware/auth.middleware"
-import type { Request, Response } from "express"
+import { type AuthRequest } from "../middleware/auth.middleware"
+import {
+	generateEmailToken,
+	verifyEmailToken,
+} from "../services/email-verification.service"
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -66,7 +66,12 @@ function makeAuthReq(
 	} as unknown as AuthRequest
 }
 
-function makeRes(): { res: Response; json: jest.Mock; status: jest.Mock; redirect: jest.Mock } {
+function makeRes(): {
+	res: Response
+	json: jest.Mock
+	status: jest.Mock
+	redirect: jest.Mock
+} {
 	const json = jest.fn()
 	const redirect = jest.fn()
 	const status = jest.fn().mockReturnValue({ json })
@@ -131,7 +136,12 @@ describe("initiateVerification", () => {
 	})
 
 	it("returns 401 when user is not authenticated", async () => {
-		const req = { user: undefined, body: { method: "email" }, query: {}, headers: {} } as unknown as AuthRequest
+		const req = {
+			user: undefined,
+			body: { method: "email" },
+			query: {},
+			headers: {},
+		} as unknown as AuthRequest
 		const { res, status } = makeRes()
 		await initiateVerification(req, res)
 		expect(status).toHaveBeenCalledWith(401)
@@ -165,7 +175,10 @@ describe("initiateVerification", () => {
 
 		it("returns 400 for missing email", async () => {
 			const { res, status } = makeRes()
-			await initiateVerification(makeAuthReq({ method: "email", data: {} }), res)
+			await initiateVerification(
+				makeAuthReq({ method: "email", data: {} }),
+				res,
+			)
 			expect(status).toHaveBeenCalledWith(400)
 		})
 
@@ -204,12 +217,17 @@ describe("initiateVerification", () => {
 				expect.stringContaining("INSERT INTO identity_verifications"),
 				expect.arrayContaining([WALLET, "phone", "pending"]),
 			)
-			expect(json).toHaveBeenCalledWith(expect.objectContaining({ message: expect.any(String) }))
+			expect(json).toHaveBeenCalledWith(
+				expect.objectContaining({ message: expect.any(String) }),
+			)
 		})
 
 		it("returns 400 for missing phone", async () => {
 			const { res, status } = makeRes()
-			await initiateVerification(makeAuthReq({ method: "phone", data: {} }), res)
+			await initiateVerification(
+				makeAuthReq({ method: "phone", data: {} }),
+				res,
+			)
 			expect(status).toHaveBeenCalledWith(400)
 		})
 
@@ -255,7 +273,12 @@ describe("initiateVerification", () => {
 			expect(submitDocumentMock).toHaveBeenCalledTimes(1)
 			expect(poolQueryMock).toHaveBeenCalledWith(
 				expect.stringContaining("INSERT INTO identity_verifications"),
-				expect.arrayContaining([WALLET, "government_id", "pending", "smile-job-id-123"]),
+				expect.arrayContaining([
+					WALLET,
+					"government_id",
+					"pending",
+					"smile-job-id-123",
+				]),
 			)
 			expect(json).toHaveBeenCalledWith(
 				expect.objectContaining({ jobId: "smile-job-id-123" }),
@@ -314,7 +337,12 @@ describe("confirmVerification", () => {
 	})
 
 	it("returns 401 when unauthenticated", async () => {
-		const req = { user: undefined, body: { method: "email" }, query: {}, headers: {} } as unknown as AuthRequest
+		const req = {
+			user: undefined,
+			body: { method: "email" },
+			query: {},
+			headers: {},
+		} as unknown as AuthRequest
 		const { res, status } = makeRes()
 		await confirmVerification(req, res)
 		expect(status).toHaveBeenCalledWith(401)
@@ -325,10 +353,7 @@ describe("confirmVerification", () => {
 			const token = generateEmailToken(WALLET, "alice@example.com")
 			const { res, json } = makeRes()
 
-			await confirmVerification(
-				makeAuthReq({ method: "email", token }),
-				res,
-			)
+			await confirmVerification(makeAuthReq({ method: "email", token }), res)
 
 			expect(poolQueryMock).toHaveBeenCalledWith(
 				expect.stringContaining("INSERT INTO identity_verifications"),
@@ -340,7 +365,10 @@ describe("confirmVerification", () => {
 		})
 
 		it("rejects a token for a different wallet", async () => {
-			const token = generateEmailToken("GDIFFERENTWALLETADDRESS", "eve@example.com")
+			const token = generateEmailToken(
+				"GDIFFERENTWALLETADDRESS",
+				"eve@example.com",
+			)
 			const { res, status } = makeRes()
 
 			await confirmVerification(makeAuthReq({ method: "email", token }), res)
@@ -365,7 +393,11 @@ describe("confirmVerification", () => {
 			const { res, json } = makeRes()
 
 			await confirmVerification(
-				makeAuthReq({ method: "phone", phone: "+2341234567890", code: "123456" }),
+				makeAuthReq({
+					method: "phone",
+					phone: "+2341234567890",
+					code: "123456",
+				}),
 				res,
 			)
 
@@ -380,7 +412,11 @@ describe("confirmVerification", () => {
 			const { res, status } = makeRes()
 
 			await confirmVerification(
-				makeAuthReq({ method: "phone", phone: "+2341234567890", code: "000000" }),
+				makeAuthReq({
+					method: "phone",
+					phone: "+2341234567890",
+					code: "000000",
+				}),
 				res,
 			)
 			expect(status).toHaveBeenCalledWith(400)
@@ -391,7 +427,11 @@ describe("confirmVerification", () => {
 			const { res, status } = makeRes()
 
 			await confirmVerification(
-				makeAuthReq({ method: "phone", phone: "+2341234567890", code: "123456" }),
+				makeAuthReq({
+					method: "phone",
+					phone: "+2341234567890",
+					code: "123456",
+				}),
 				res,
 			)
 			expect(status).toHaveBeenCalledWith(500)
@@ -401,10 +441,7 @@ describe("confirmVerification", () => {
 	describe("government_id / biometric (async)", () => {
 		it("returns 400 because these are confirmed via webhook", async () => {
 			const { res, status } = makeRes()
-			await confirmVerification(
-				makeAuthReq({ method: "government_id" }),
-				res,
-			)
+			await confirmVerification(makeAuthReq({ method: "government_id" }), res)
 			expect(status).toHaveBeenCalledWith(400)
 		})
 	})
@@ -443,15 +480,22 @@ describe("emailVerificationCallback", () => {
 		const { res, redirect } = makeRes()
 
 		await emailVerificationCallback(req, res)
-		expect(redirect).toHaveBeenCalledWith(expect.stringContaining("missing_token"))
+		expect(redirect).toHaveBeenCalledWith(
+			expect.stringContaining("missing_token"),
+		)
 	})
 
 	it("redirects with error=invalid_token for a tampered token", async () => {
-		const req = { query: { token: "invalid.token" }, headers: {} } as unknown as Request
+		const req = {
+			query: { token: "invalid.token" },
+			headers: {},
+		} as unknown as Request
 		const { res, redirect } = makeRes()
 
 		await emailVerificationCallback(req, res)
-		expect(redirect).toHaveBeenCalledWith(expect.stringContaining("invalid_token"))
+		expect(redirect).toHaveBeenCalledWith(
+			expect.stringContaining("invalid_token"),
+		)
 	})
 })
 
@@ -465,8 +509,20 @@ describe("getVerificationStatus", () => {
 	it("returns all verification rows for the wallet", async () => {
 		poolQueryMock.mockResolvedValue({
 			rows: [
-				{ method: "email", status: "verified", verified_at: new Date().toISOString(), expires_at: null, created_at: new Date().toISOString() },
-				{ method: "phone", status: "pending", verified_at: null, expires_at: new Date().toISOString(), created_at: new Date().toISOString() },
+				{
+					method: "email",
+					status: "verified",
+					verified_at: new Date().toISOString(),
+					expires_at: null,
+					created_at: new Date().toISOString(),
+				},
+				{
+					method: "phone",
+					status: "pending",
+					verified_at: null,
+					expires_at: new Date().toISOString(),
+					created_at: new Date().toISOString(),
+				},
 			],
 		})
 		const { res, json } = makeRes()
@@ -485,7 +541,12 @@ describe("getVerificationStatus", () => {
 	})
 
 	it("returns 401 when unauthenticated", async () => {
-		const req = { user: undefined, body: {}, query: {}, headers: {} } as unknown as AuthRequest
+		const req = {
+			user: undefined,
+			body: {},
+			query: {},
+			headers: {},
+		} as unknown as AuthRequest
 		const { res, status } = makeRes()
 		await getVerificationStatus(req, res)
 		expect(status).toHaveBeenCalledWith(401)
@@ -542,7 +603,9 @@ describe("getSybilScore", () => {
 		const { res, json } = makeRes()
 		await getSybilScore(makeAuthReq(), res)
 
-		const call = (json.mock.calls[0] as [{ score: number; riskLevel: string }])[0]
+		const call = (
+			json.mock.calls[0] as [{ score: number; riskLevel: string }]
+		)[0]
 		expect(call.score).toBe(40)
 		expect(call.riskLevel).toBe("medium")
 	})
@@ -560,7 +623,10 @@ describe("kycWebhook", () => {
 	})
 
 	it("marks verification as verified on ResultCode 1220", async () => {
-		const body = JSON.stringify({ job_id: "job-abc", result: { ResultCode: "1220" } })
+		const body = JSON.stringify({
+			job_id: "job-abc",
+			result: { ResultCode: "1220" },
+		})
 		const req = {
 			body,
 			headers: {},
@@ -577,7 +643,10 @@ describe("kycWebhook", () => {
 	})
 
 	it("marks verification as failed on a non-1220 result code", async () => {
-		const body = JSON.stringify({ job_id: "job-abc", result: { ResultCode: "1221" } })
+		const body = JSON.stringify({
+			job_id: "job-abc",
+			result: { ResultCode: "1221" },
+		})
 		const req = { body, headers: {} } as unknown as Request
 		const { res, json } = makeRes()
 
@@ -601,7 +670,10 @@ describe("kycWebhook", () => {
 
 	it("rejects requests with a wrong HMAC signature when secret is configured", async () => {
 		process.env.SMILE_IDENTITY_WEBHOOK_SECRET = "correct-secret"
-		const body = JSON.stringify({ job_id: "j1", result: { ResultCode: "1220" } })
+		const body = JSON.stringify({
+			job_id: "j1",
+			result: { ResultCode: "1220" },
+		})
 		const req = {
 			body,
 			headers: { "x-smile-signature": "wrong-sig" },

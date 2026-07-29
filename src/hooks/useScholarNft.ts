@@ -394,6 +394,8 @@ export interface UseUserScholarNftsResult {
 	refetch: () => void
 }
 
+const EMPTY_CREDENTIALS: CredentialData[] = []
+
 export function useUserScholarNfts(
 	walletAddress: string | undefined,
 ): UseUserScholarNftsResult {
@@ -421,7 +423,10 @@ export function useUserScholarNfts(
 				try {
 					return await fetchCredentialData(id.toString())
 				} catch (err) {
-					console.error(`Failed to fetch credential data for token ID ${id}`, err)
+					console.error(
+						`Failed to fetch credential data for token ID ${id}`,
+						err,
+					)
 					return null
 				}
 			})
@@ -435,9 +440,11 @@ export function useUserScholarNfts(
 	})
 
 	return {
-		credentials: data ?? [],
+		credentials: data ?? EMPTY_CREDENTIALS,
 		isLoading,
-		error: error ? (error as Error).message || "Failed to fetch user Scholar NFTs" : null,
+		error: error
+			? (error as Error).message || "Failed to fetch user Scholar NFTs"
+			: null,
 		refetch,
 	}
 }

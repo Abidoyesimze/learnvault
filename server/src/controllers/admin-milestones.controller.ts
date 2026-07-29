@@ -1,5 +1,6 @@
 import { type Request, type Response } from "express"
 import sanitizeHtml from "sanitize-html"
+import { pool } from "../db"
 import { milestoneStore, type MilestoneReport } from "../db/milestone-store"
 import { createNotification } from "../db/notifications-store"
 import {
@@ -7,13 +8,22 @@ import {
 	listRecentPeerReviewsForReport,
 } from "../db/peer-review-store"
 
+import { logger } from "../lib/logger"
 import { type AdminRequest } from "../middleware/admin.middleware"
 import { credentialService } from "../services/credential.service"
 import { createEmailService } from "../services/email.service"
 import { markEscrowActivity } from "../services/escrow-timeout.service"
+import {
+	GithubOracleError,
+	verifyMilestoneReportEvidence,
+} from "../services/github-oracle.service"
+import { lrnToAtomic, mintLrn } from "../services/learn-token.service"
 import { deliverNotificationChannels } from "../services/notification-delivery.service"
 import { stellarContractService } from "../services/stellar-contract.service"
+import { recordMilestoneActivity } from "../services/streak.service"
 import { templates, toPlainText } from "../templates/email-templates"
+
+const log = logger.child({ module: "admin-milestones" })
 
 const emailService = createEmailService(
 	process.env.RESEND_API_KEY || process.env.EMAIL_API_KEY || "",
@@ -125,6 +135,47 @@ export async function getMilestoneById(
 	}
 }
 
+// ── POST /api/admin/milestones/:id/verify-oracle ─────────────────────────────
+// Manually (re-)run GitHub proof-of-work verification for a report's evidence.
+
+export async function verifyMilestoneOracle(
+	req: AdminRequest,
+	res: Response,
+): Promise<void> {
+	const id = Number(req.params.id)
+	if (!Number.isInteger(id) || id <= 0) {
+		res.status(400).json({ error: "Invalid milestone report id" })
+		return
+	}
+
+	try {
+		const report = await milestoneStore.getReportById(id)
+		if (!report) {
+			res.status(404).json({ error: "Milestone report not found" })
+			return
+		}
+		if (!report.evidence_github) {
+			res
+				.status(400)
+				.json({ error: "Report has no GitHub PR evidence to verify" })
+			return
+		}
+
+		const result = await verifyMilestoneReportEvidence(report)
+		res.status(200).json({ data: result })
+	} catch (err) {
+		if (err instanceof GithubOracleError) {
+			res.status(err.code === "INVALID_URL" ? 400 : 502).json({
+				error: err.message,
+				code: err.code,
+			})
+			return
+		}
+		log.error({ err }, "verifyMilestoneOracle error")
+		res.status(500).json({ error: "Failed to verify milestone evidence" })
+	}
+}
+
 export async function approveMilestone(
 	req: AdminRequest,
 	res: Response,
@@ -152,6 +203,45 @@ export async function approveMilestone(
 			return
 		}
 
+		// Oracle gate: corroborate GitHub proof-of-work before releasing escrow.
+		// An admin can bypass a failed/unavailable check with overrideOracle=true.
+		const overrideOracle =
+			(req.body as { overrideOracle?: boolean }).overrideOracle === true
+		if (report.evidence_github) {
+			let oracle: Awaited<ReturnType<typeof verifyMilestoneReportEvidence>> =
+				null
+			try {
+				oracle = await verifyMilestoneReportEvidence(report)
+			} catch (oracleErr) {
+				const code =
+					oracleErr instanceof GithubOracleError ? oracleErr.code : "UNKNOWN"
+				log.warn(
+					{ err: oracleErr, reportId: id, code },
+					"oracle verification errored during approval",
+				)
+				if (!overrideOracle) {
+					res.status(422).json({
+						error: "GitHub proof-of-work could not be verified",
+						code,
+						hint: "Retry, or approve with overrideOracle=true to bypass.",
+					})
+					return
+				}
+			}
+			if (oracle && !oracle.verified && !overrideOracle) {
+				res.status(422).json({
+					error: "GitHub proof-of-work verification failed",
+					data: {
+						checks: oracle.checks,
+						reasons: oracle.reasons,
+						evidenceHash: oracle.evidenceHash,
+					},
+					hint: "Approve with overrideOracle=true to bypass the failed check.",
+				})
+				return
+			}
+		}
+
 		// Trigger on-chain verify_milestone() call
 		const contractResult = await stellarContractService.callVerifyMilestone(
 			report.scholar_address,
@@ -166,6 +256,14 @@ export async function approveMilestone(
 			await markEscrowActivity(report.scholar_address, report.course_id)
 		} catch (trackingErr) {
 			console.error("[admin] escrow activity update failed:", trackingErr)
+		}
+		try {
+			await recordMilestoneActivity(report.scholar_address)
+		} catch (streakErr) {
+			log.error(
+				{ err: streakErr },
+				"streak activity update failed (non-blocking)",
+			)
 		}
 		const auditEntry = await milestoneStore.addAuditEntry({
 			report_id: id,
@@ -238,6 +336,8 @@ export async function approveMilestone(
 		} catch (mintErr) {
 			log.error({ err: mintErr }, "Certificate mint failed (non-blocking)")
 		}
+
+		void qualifyReferralIfFirstMilestone(report.scholar_address)
 
 		res.status(200).json({
 			data: {
@@ -487,6 +587,14 @@ export async function batchApproveMilestones(
 				} catch (trackingErr) {
 					console.error("[admin] escrow activity update failed:", trackingErr)
 				}
+				try {
+					await recordMilestoneActivity(r.scholar_address)
+				} catch (streakErr) {
+					console.error(
+						"[admin] streak activity update failed (non-blocking):",
+						streakErr,
+					)
+				}
 				await milestoneStore.addAuditEntry({
 					report_id: id,
 					validator_address: validatorAddress,
@@ -507,9 +615,7 @@ export async function batchApproveMilestones(
 								milestoneTitle:
 									r.milestone_title ||
 									`Milestone ${r.milestone_number ?? r.milestone_id}`,
-								milestoneNumber: String(
-									r.milestone_number ?? r.milestone_id,
-								),
+								milestoneNumber: String(r.milestone_number ?? r.milestone_id),
 								reward: String(r.lrn_reward ?? 0),
 								dashboardUrl: `${process.env.FRONTEND_URL || ""}/dashboard`,
 								unsubscribeUrl: "#",
@@ -571,7 +677,9 @@ export async function batchRejectMilestones(
 			? rawReason.trim()
 			: "Batch rejection"
 	if (reasonInput.length > 1000) {
-		res.status(400).json({ error: "Rejection reason must be 1000 characters or fewer" })
+		res
+			.status(400)
+			.json({ error: "Rejection reason must be 1000 characters or fewer" })
 		return
 	}
 	const sanitizedReason = sanitizeHtml(reasonInput, {
@@ -659,9 +767,7 @@ export async function batchRejectMilestones(
 								milestoneTitle:
 									r.milestone_title ||
 									`Milestone ${r.milestone_number ?? r.milestone_id}`,
-								milestoneNumber: String(
-									r.milestone_number ?? r.milestone_id,
-								),
+								milestoneNumber: String(r.milestone_number ?? r.milestone_id),
 								rejectionReason: sanitizedReason,
 								milestoneUrl: `${process.env.FRONTEND_URL || ""}/milestones`,
 								unsubscribeUrl: "#",
@@ -700,125 +806,81 @@ export async function batchRejectMilestones(
 		res.status(500).json({ error: "Failed to batch reject milestones" })
 	}
 }
-export async function batchApproveMilestones(
-	req: AdminRequest,
-	res: Response,
+
+async function rewardLrnBonus(
+	referralId: number,
+	referrerAddr: string,
+	scholarAddress: string,
 ): Promise<void> {
-	const { milestoneIds } = req.body as { milestoneIds: number[] }
-	if (!Array.isArray(milestoneIds) || milestoneIds.length === 0) {
-		res.status(400).json({ error: "No milestone report IDs provided" })
+	const amount = lrnToAtomic(100)
+	try {
+		await mintLrn(referrerAddr, amount)
+		log.info(
+			{ referrerAddr, amount: amount.toString() },
+			"LRN minted for referrer",
+		)
+	} catch (err) {
+		log.error({ err, referrerAddr }, "Failed to mint LRN for referrer")
 		return
 	}
 
-	const results = []
-	let succeeded = 0
-	let failed = 0
-
-	// Pre-validation: ensure all reports exist and are pending
-	for (const id of milestoneIds) {
-		const report = await milestoneStore.getReportById(id)
-		if (!report) {
-			res.status(404).json({
-				error: "One or more milestone reports were not found",
-				data: { results: [{ reportId: id, success: false, status: "not_found" }] }
-			})
-			return
-		}
-		if (report.status !== "pending") {
-			res.status(409).json({
-				error: "All milestone reports must be pending before batch processing",
-				data: { results: [{ reportId: id, success: false, status: report.status }] }
-			})
-			return
-		}
+	try {
+		await mintLrn(scholarAddress, amount)
+		log.info(
+			{ scholarAddress, amount: amount.toString() },
+			"LRN minted for referred learner",
+		)
+	} catch (err) {
+		log.error(
+			{ err, scholarAddress },
+			"Failed to mint LRN for referred learner",
+		)
+		return
 	}
 
-	for (const id of milestoneIds) {
-		try {
-			const report = (await milestoneStore.getReportById(id))!
-			const contractResult = await stellarContractService.callVerifyMilestone(
-				report.scholar_address,
-				report.course_id,
-				report.milestone_id,
-				{ requestId: req.requestId },
-			)
-			await milestoneStore.updateReportStatus(id, "approved")
-			await milestoneStore.addAuditEntry({
-				report_id: id,
-				validator_address: req.adminAddress ?? "unknown",
-				decision: "approved",
-				rejection_reason: null,
-				contract_tx_hash: contractResult.txHash,
-			})
-			results.push({ reportId: id, success: true, status: "approved", txHash: contractResult.txHash })
-			succeeded++
-		} catch (err) {
-			results.push({ reportId: id, success: false, status: "failed", error: err instanceof Error ? err.message : String(err) })
-			failed++
-		}
-	}
-
-	res.status(200).json({ data: { succeeded, failed, results } })
+	await pool.query(
+		`UPDATE referrals SET status = 'rewarded'
+		 WHERE id = $1 AND status = 'qualified'`,
+		[referralId],
+	)
 }
 
-export async function batchRejectMilestones(
-	req: AdminRequest,
-	res: Response,
+async function qualifyReferralIfFirstMilestone(
+	scholarAddress: string,
 ): Promise<void> {
-	const { milestoneIds, reason } = req.body as { milestoneIds: number[]; reason: string }
-	if (!Array.isArray(milestoneIds) || milestoneIds.length === 0) {
-		res.status(400).json({ error: "No milestone report IDs provided" })
-		return
+	try {
+		const ref = await pool.query(
+			`SELECT id, referrer_addr FROM referrals
+			 WHERE referred_addr = $1 AND status = 'pending'
+			 LIMIT 1`,
+			[scholarAddress],
+		)
+		if (ref.rows.length === 0) return
+
+		const countResult = await pool.query(
+			`SELECT COUNT(*)::int AS count
+			 FROM milestone_reports
+			 WHERE scholar_address = $1 AND status = 'approved'`,
+			[scholarAddress],
+		)
+		if (countResult.rows[0].count !== 1) return
+
+		const referralId = ref.rows[0].id as number
+		const referrerAddr = ref.rows[0].referrer_addr as string
+
+		await pool.query(
+			`UPDATE referrals SET status = 'qualified', qualified_at = NOW()
+			 WHERE id = $1 AND status = 'pending'`,
+			[referralId],
+		)
+
+		log.info(
+			{ scholarAddress, referralId },
+			"Referral qualified after first milestone",
+		)
+
+		void rewardLrnBonus(referralId, referrerAddr, scholarAddress)
+	} catch (err) {
+		log.error({ err, scholarAddress }, "Failed to qualify referral")
 	}
-
-	const results = []
-	let succeeded = 0
-	let failed = 0
-
-	// Pre-validation: ensure all reports exist and are pending
-	for (const id of milestoneIds) {
-		const report = await milestoneStore.getReportById(id)
-		if (!report) {
-			res.status(404).json({
-				error: "One or more milestone reports were not found",
-				data: { results: [{ reportId: id, success: false, status: "not_found" }] }
-			})
-			return
-		}
-		if (report.status !== "pending") {
-			res.status(409).json({
-				error: "All milestone reports must be pending before batch processing",
-				data: { results: [{ reportId: id, success: false, status: report.status }] }
-			})
-			return
-		}
-	}
-
-	for (const id of milestoneIds) {
-		try {
-			const report = (await milestoneStore.getReportById(id))!
-			const contractResult = await stellarContractService.emitRejectionEvent(
-				report.scholar_address,
-				report.course_id,
-				report.milestone_id,
-				reason,
-				{ requestId: req.requestId },
-			)
-			await milestoneStore.updateReportStatus(id, "rejected")
-			await milestoneStore.addAuditEntry({
-				report_id: id,
-				validator_address: req.adminAddress ?? "unknown",
-				decision: "rejected",
-				rejection_reason: reason,
-				contract_tx_hash: contractResult.txHash,
-			})
-			results.push({ reportId: id, success: true, status: "rejected", txHash: contractResult.txHash, reason })
-			succeeded++
-		} catch (err) {
-			results.push({ reportId: id, success: false, status: "failed", error: err instanceof Error ? err.message : String(err) })
-			failed++
-		}
-	}
-
-	res.status(200).json({ data: { succeeded, failed, results } })
 }

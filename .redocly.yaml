@@ -10,4 +10,3 @@ rules:
   operation-operationId: warn
   no-unused-components: warn
   operation-4xx-response: warn
-

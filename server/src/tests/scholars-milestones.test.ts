@@ -26,6 +26,17 @@ const testJwtService: JwtService = {
 		jti: "test-jti",
 	}),
 	revokeToken: async () => {},
+	signRefreshToken: () => "mock-refresh-token",
+	issueTokenPair: () => ({
+		accessToken: "mock-token",
+		refreshToken: "mock-refresh-token",
+	}),
+	verifyRefreshToken: async () => ({ sub: "GSCHOLAR1", jti: "test-jti" }),
+	rotateRefreshToken: async () => ({
+		accessToken: "mock-token",
+		refreshToken: "mock-refresh-token",
+		sub: "GSCHOLAR1",
+	}),
 }
 
 const buildApp = (): express.Express => {
@@ -101,7 +112,6 @@ describe("GET /api/scholars/:address/milestones", () => {
 			rejection_reason: "No evidence",
 			contract_tx_hash: "tx_reject_1",
 		})
-
 		;(pool.query as jest.Mock).mockImplementation(
 			(sql: string, params?: unknown[]) => {
 				if (String(sql).includes("milestone_audit_log")) {
@@ -132,13 +142,21 @@ describe("GET /api/scholars/:address/milestones", () => {
 		)
 
 		const app = buildApp()
-		const mockedQuery = (require("../db/index").pool.query as jest.Mock)
+		const mockedQuery = require("../db/index").pool.query as jest.Mock
 		mockedQuery.mockResolvedValueOnce({
 			rows: [
-				{ report_id: 1, decided_at: new Date().toISOString(), contract_tx_hash: "abc123" },
-				{ report_id: 3, decided_at: new Date().toISOString(), contract_tx_hash: "tx_reject_1" }
+				{
+					report_id: 1,
+					decided_at: new Date().toISOString(),
+					contract_tx_hash: "abc123",
+				},
+				{
+					report_id: 3,
+					decided_at: new Date().toISOString(),
+					contract_tx_hash: "tx_reject_1",
+				},
 			],
-			rowCount: 2
+			rowCount: 2,
 		})
 		const res = await request(app).get("/api/scholars/GSCHOLAR1/milestones")
 
@@ -189,7 +207,6 @@ describe("GET /api/scholars/:address/milestones", () => {
 			evidence_ipfs_cid: null,
 			evidence_description: null,
 		})
-
 		;(pool.query as jest.Mock).mockImplementation(
 			(sql: string, params?: unknown[]) => {
 				if (String(sql).includes("milestone_audit_log")) {

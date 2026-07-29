@@ -35,4 +35,3 @@ For CI/test-only validation against the generated spec, set:
 
 This enables `express-openapi-validator` middleware at runtime (see
 `server/src/middleware/openapi-validator.middleware.ts`).
-

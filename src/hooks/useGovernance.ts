@@ -477,60 +477,63 @@ export function useGovernance() {
 	})
 
 	// Fetch governance parameters
-	const { data: govParams = { quorum: 0n, approvalBps: 0, votingPeriod: 0 } } = useQuery({
-		queryKey: ["governance", "parameters"],
-		queryFn: async () => {
-			if (!scholarshipTreasury) {
-				return { quorum: 0n, approvalBps: 0, votingPeriod: 0 }
-			}
-			const client = await loadClient("../contracts/scholarship_treasury")
-			if (!client) {
-				return { quorum: 0n, approvalBps: 0, votingPeriod: 0 }
-			}
-
-			let quorum = 0n
-			let approvalBps = 0
-			let votingPeriod = 0
-
-			// Fetch Quorum
-			try {
-				const fn = asMethod(client, "get_quorum", "getQuorum")
-				if (fn) {
-					const res = await fn({})
-					quorum = toBigIntSafe(res)
+	const { data: govParams = { quorum: 0n, approvalBps: 0, votingPeriod: 0 } } =
+		useQuery({
+			queryKey: ["governance", "parameters"],
+			queryFn: async () => {
+				if (!scholarshipTreasury) {
+					return { quorum: 0n, approvalBps: 0, votingPeriod: 0 }
 				}
-			} catch (e) {
-				logger.error("Failed to fetch quorum", e)
-			}
-
-			// Fetch Approval BPS
-			try {
-				const fn = asMethod(client, "get_approval_bps", "getApprovalBps")
-				if (fn) {
-					const res = await fn({})
-					const unwrapped = unwrapResult(res)
-					approvalBps = typeof unwrapped === "number" ? unwrapped : Number(unwrapped || 0)
+				const client = await loadClient("../contracts/scholarship_treasury")
+				if (!client) {
+					return { quorum: 0n, approvalBps: 0, votingPeriod: 0 }
 				}
-			} catch (e) {
-				logger.error("Failed to fetch approval BPS", e)
-			}
 
-			// Fetch Voting Period
-			try {
-				const fn = asMethod(client, "get_voting_period", "getVotingPeriod")
-				if (fn) {
-					const res = await fn({})
-					const unwrapped = unwrapResult(res)
-					votingPeriod = typeof unwrapped === "number" ? unwrapped : Number(unwrapped || 0)
+				let quorum = 0n
+				let approvalBps = 0
+				let votingPeriod = 0
+
+				// Fetch Quorum
+				try {
+					const fn = asMethod(client, "get_quorum", "getQuorum")
+					if (fn) {
+						const res = await fn({})
+						quorum = toBigIntSafe(res)
+					}
+				} catch (e) {
+					logger.error("Failed to fetch quorum", e)
 				}
-			} catch (e) {
-				logger.error("Failed to fetch voting period", e)
-			}
 
-			return { quorum, approvalBps, votingPeriod }
-		},
-		staleTime: 5 * 60 * 1000,
-	})
+				// Fetch Approval BPS
+				try {
+					const fn = asMethod(client, "get_approval_bps", "getApprovalBps")
+					if (fn) {
+						const res = await fn({})
+						const unwrapped = unwrapResult(res)
+						approvalBps =
+							typeof unwrapped === "number" ? unwrapped : Number(unwrapped || 0)
+					}
+				} catch (e) {
+					logger.error("Failed to fetch approval BPS", e)
+				}
+
+				// Fetch Voting Period
+				try {
+					const fn = asMethod(client, "get_voting_period", "getVotingPeriod")
+					if (fn) {
+						const res = await fn({})
+						const unwrapped = unwrapResult(res)
+						votingPeriod =
+							typeof unwrapped === "number" ? unwrapped : Number(unwrapped || 0)
+					}
+				} catch (e) {
+					logger.error("Failed to fetch voting period", e)
+				}
+
+				return { quorum, approvalBps, votingPeriod }
+			},
+			staleTime: 5 * 60 * 1000,
+		})
 
 	// Mutation for casting a vote
 	const { mutateAsync: castVote, isPending: isVoting } = useMutation({

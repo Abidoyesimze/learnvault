@@ -13,7 +13,6 @@ import TreasuryHealthChart, {
 	type TreasuryPoint,
 } from "../components/treasury/TreasuryHealthChart"
 import TxHashLink from "../components/TxHashLink"
-import { ActivityFeedSkeleton } from "../components/SkeletonLoader"
 import { useContractIds } from "../hooks/useContractIds"
 import { useTreasury } from "../hooks/useTreasury"
 import { useUSDC } from "../hooks/useUSDC"
@@ -233,27 +232,27 @@ const Treasury: React.FC = () => {
 
 	const displayStats = stats
 		? {
-			totalTreasury: treasuryLoading
-				? "Loading..."
-				: treasuryUSDC !== undefined
-					? `${treasuryUSDC.toLocaleString(undefined, { maximumFractionDigits: 2 })} USDC`
-					: `${formatUSDC(stats.total_deposited_usdc)} USDC`,
-			totalDisbursed: `${formatUSDC(stats.total_disbursed_usdc)} USDC`,
-			scholarsFunded: stats.scholars_funded.toString(),
-			donorsCount: stats.donors_count.toString(),
-		}
+				totalTreasury: treasuryLoading
+					? "Loading..."
+					: treasuryUSDC !== undefined
+						? `${treasuryUSDC.toLocaleString(undefined, { maximumFractionDigits: 2 })} USDC`
+						: `${formatUSDC(stats.total_deposited_usdc)} USDC`,
+				totalDisbursed: `${formatUSDC(stats.total_disbursed_usdc)} USDC`,
+				scholarsFunded: stats.scholars_funded.toString(),
+				donorsCount: stats.donors_count.toString(),
+			}
 		: {
-			totalTreasury: treasuryLoading
-				? "Loading..."
-				: treasuryUSDC !== undefined
-					? `${treasuryUSDC.toLocaleString(undefined, { maximumFractionDigits: 2 })} USDC`
-					: isError
-						? "Unavailable"
-						: "Loading...",
-			totalDisbursed: isLoading ? "Loading..." : "Unavailable",
-			scholarsFunded: isLoading ? "..." : "—",
-			donorsCount: isLoading ? "..." : "—",
-		}
+				totalTreasury: treasuryLoading
+					? "Loading..."
+					: treasuryUSDC !== undefined
+						? `${treasuryUSDC.toLocaleString(undefined, { maximumFractionDigits: 2 })} USDC`
+						: isError
+							? "Unavailable"
+							: "Loading...",
+				totalDisbursed: isLoading ? "Loading..." : "Unavailable",
+				scholarsFunded: isLoading ? "..." : "—",
+				donorsCount: isLoading ? "..." : "—",
+			}
 
 	const deposits = (activity ?? [])
 		.filter((e) => e.type === "deposit")
@@ -666,39 +665,30 @@ const ActivityFeed: React.FC<{
 										hash={item.txHash}
 										className="mt-2 inline-flex text-[10px] font-black uppercase tracking-widest text-brand-cyan hover:underline"
 									/>
-									<div>
-										<p className="font-bold text-sm">{item.user}</p>
-										<p className="text-[10px] text-white/30 uppercase font-black tracking-widest">
-											{item.time}
-										</p>
-										<TxHashLink
-											hash={item.txHash}
-											className="mt-2 inline-flex text-[10px] font-black uppercase tracking-widest text-brand-cyan hover:underline"
-										/>
-									</div>
 								</div>
-								<p
-									className={`font-black ${item.type === "deposit" ? "text-brand-emerald" : "text-white/80"}`}
-								>
-									{item.amount}
-								</p>
 							</div>
-						))}
-						{showLoadMore && onLoadMore ? (
-							<button
-								type="button"
-								onClick={onLoadMore}
-								disabled={loadingMore}
-								className="mt-3 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-xs font-black uppercase tracking-[0.2em] text-white/80 transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+							<p
+								className={`font-black ${item.type === "deposit" ? "text-brand-emerald" : "text-white/80"}`}
 							>
-								{loadingMore ? "Loading..." : "Load More"}
-							</button>
-						) : null}
-					</>
-				)}
-			</div>
+								{item.amount}
+							</p>
+						</div>
+					))}
+					{showLoadMore && onLoadMore ? (
+						<button
+							type="button"
+							onClick={onLoadMore}
+							disabled={loadingMore}
+							className="mt-3 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-xs font-black uppercase tracking-[0.2em] text-white/80 transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+						>
+							{loadingMore ? "Loading..." : "Load More"}
+						</button>
+					) : null}
+				</>
+			)}
 		</div>
-	)
+	</div>
+)
 
 const AssetBalanceCard: React.FC<{
 	balance: AssetBalance
@@ -714,7 +704,9 @@ const AssetBalanceCard: React.FC<{
 				<span className="text-xs font-black uppercase tracking-widest text-white/40">
 					{balance.symbol}
 				</span>
-				<span className={`text-xs font-black uppercase tracking-widest ${colorClass}`}>
+				<span
+					className={`text-xs font-black uppercase tracking-widest ${colorClass}`}
+				>
 					●
 				</span>
 			</div>

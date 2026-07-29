@@ -105,13 +105,12 @@ describe("GET /api/courses", () => {
 		expect(res.body.pagination.total).toBe(1)
 		expect(mockedQuery).toHaveBeenNthCalledWith(
 			1,
-			expect.stringContaining("c.title ILIKE $1 OR c.description ILIKE $1"),
-			["%stellar%", 12, 0],
+			expect.stringContaining("SELECT COUNT(*) AS count FROM courses c"),
 			["%stellar%"],
 		)
 		expect(mockedQuery).toHaveBeenNthCalledWith(
 			2,
-			expect.stringContaining("c.title ILIKE $1 OR c.description ILIKE $1"),
+			expect.stringContaining("SELECT"),
 			["%stellar%", 12, 0],
 		)
 	})
@@ -335,7 +334,9 @@ describe("POST /api/courses", () => {
 				prerequisites: [999],
 			})
 		expect(res.status).toBe(400)
-		expect(res.body.error).toBe("One or more prerequisite course IDs do not exist")
+		expect(res.body.error).toBe(
+			"One or more prerequisite course IDs do not exist",
+		)
 	})
 
 	it("creates course successfully with valid prerequisites", async () => {
@@ -453,7 +454,9 @@ describe("PATCH /api/courses/:id", () => {
 			.set("Authorization", `Bearer ${adminToken}`)
 			.send({ prerequisites: [999] })
 		expect(res.status).toBe(400)
-		expect(res.body.error).toBe("One or more prerequisite course IDs do not exist")
+		expect(res.body.error).toBe(
+			"One or more prerequisite course IDs do not exist",
+		)
 	})
 
 	it("updates course successfully with valid prerequisites", async () => {

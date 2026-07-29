@@ -27,8 +27,7 @@ CREATE TABLE IF NOT EXISTS admin_key_rotation_history (
     new_key_hash          TEXT NOT NULL,
     rotation_reason       TEXT NOT NULL,
     rotated_by            TEXT NOT NULL,
-    carried_out_at        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (admin_address) REFERENCES admin_api_keys(admin_address) ON DELETE CASCADE
+    carried_out_at        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_admin_key_rotation_history_address

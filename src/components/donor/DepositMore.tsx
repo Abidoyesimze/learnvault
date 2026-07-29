@@ -1,4 +1,5 @@
 import React, { useState } from "react"
+import { useAdminContracts } from "../../hooks/useAdminContracts"
 import { useContractIds } from "../../hooks/useContractIds"
 import { useWallet } from "../../hooks/useWallet"
 import {
@@ -10,7 +11,6 @@ import {
 	createScholarshipTreasuryContract,
 } from "../../util/scholarshipTreasury"
 import { useToast } from "../Toast/ToastProvider"
-import { useAdminContracts } from "../../hooks/useAdminContracts"
 
 interface DepositMoreProps {
 	onDepositSuccess?: () => void
@@ -240,9 +240,7 @@ export const DepositMore: React.FC<DepositMoreProps> = ({
 						</div>
 						<div className="flex items-center justify-between text-xs">
 							<span className="text-white/30">Exchange rate</span>
-							<span className="text-white/40">
-								1 {currency} = 1 GOV
-							</span>
+							<span className="text-white/40">1 {currency} = 1 GOV</span>
 						</div>
 						{currency !== "USDC" && (
 							<div className="flex items-center justify-between text-xs">

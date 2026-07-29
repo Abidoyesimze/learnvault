@@ -111,7 +111,10 @@ async function installEnrollmentMocks(page: Page) {
 		}
 
 		// GET /api/courses/:id/milestones
-		if (pathname.match(/^\/api\/courses\/[^/]+\/milestones$/) && method === "GET") {
+		if (
+			pathname.match(/^\/api\/courses\/[^/]+\/milestones$/) &&
+			method === "GET"
+		) {
 			return fulfillJson(route, mockMilestones)
 		}
 
@@ -141,7 +144,8 @@ async function installEnrollmentMocks(page: Page) {
 				learner_address: E2E_WALLET_ADDRESS,
 				course_id: body.course_id,
 				milestone_id: body.milestone_id,
-				evidence_uri: body.evidence_uri || `ipfs://QmHashFor${body.milestone_id}`,
+				evidence_uri:
+					body.evidence_uri || `ipfs://QmHashFor${body.milestone_id}`,
 				status: "pending",
 				submitted_at: new Date().toISOString(),
 				reviewed_at: null,
@@ -153,7 +157,10 @@ async function installEnrollmentMocks(page: Page) {
 		}
 
 		// GET /api/milestone-reports/:id - get report details
-		if (pathname.match(/^\/api\/milestone-reports\/[^/]+$/) && method === "GET") {
+		if (
+			pathname.match(/^\/api\/milestone-reports\/[^/]+$/) &&
+			method === "GET"
+		) {
 			const reportId = pathname.split("/").pop()
 			const report = milestoneReports.find((r) => r.id === reportId)
 			if (!report) return fulfillJson(route, {}, 404)
@@ -268,8 +275,8 @@ async function installEnrollmentMocks(page: Page) {
 test.describe("Enrollment to Milestone E2E Flow", () => {
 	test.beforeEach(async ({ page }) => {
 		// Setup mocks
-		installMockFreighter(page)
-		mockHorizonBalances(page)
+		await installMockFreighter(page)
+		await mockHorizonBalances(page)
 		await installEnrollmentMocks(page)
 	})
 
@@ -285,17 +292,19 @@ test.describe("Enrollment to Milestone E2E Flow", () => {
 		await page.waitForTimeout(500)
 
 		// Step 3: Find and enroll in course
-		const courseCard = page.locator('text="Stellar Smart Contracts 101"').first()
-		expect(courseCard).toBeVisible()
+		const courseCard = page
+			.locator('text="Stellar Smart Contracts 101"')
+			.first()
+		await expect(courseCard).toBeVisible()
 
 		await courseCard.click()
 		await page.waitForLoadState("networkidle")
 
 		// Verify course details displayed
-		await expect(page.locator('h1:has-text("Stellar Smart Contracts 101")')).toBeVisible()
-		expect(
-			page.locator("text=Learn to build on Stellar"),
+		await expect(
+			page.locator('h1:has-text("Stellar Smart Contracts 101")'),
 		).toBeVisible()
+		await expect(page.locator("text=Learn to build on Stellar")).toBeVisible()
 
 		// Step 4: Click enroll button
 		const enrollButton = page.locator('button:has-text("Enroll")')
@@ -308,20 +317,26 @@ test.describe("Enrollment to Milestone E2E Flow", () => {
 		await page.waitForLoadState("networkidle")
 
 		// Verify enrollment success
-		await expect(page.locator("text=Successfully enrolled")).toBeVisible({ timeout: 5000 })
+		await expect(page.locator("text=Successfully enrolled")).toBeVisible({
+			timeout: 5000,
+		})
 
 		// Step 5: Navigate through lessons/milestones
-		const milestone1 = page.locator('text="Setup Stellar Development Environment"')
-		expect(milestone1).toBeVisible()
+		const milestone1 = page.locator(
+			'text="Setup Stellar Development Environment"',
+		)
+		await expect(milestone1).toBeVisible()
 
 		await milestone1.click()
 		await page.waitForLoadState("networkidle")
 
 		// Step 6: Submit milestone evidence
 		const submitButton = page.locator('button:has-text("Submit Evidence")')
-		expect(submitButton).toBeVisible()
+		await expect(submitButton).toBeVisible()
 
-		const evidenceInput = page.locator('textarea[placeholder*="evidence"], input[placeholder*="evidence"]')
+		const evidenceInput = page.locator(
+			'textarea[placeholder*="evidence"], input[placeholder*="evidence"]',
+		)
 		await evidenceInput.fill("https://example.com/screenshot.png")
 
 		await submitButton.click()
@@ -333,7 +348,9 @@ test.describe("Enrollment to Milestone E2E Flow", () => {
 		await page.waitForLoadState("networkidle")
 
 		// Verify submission success
-		await expect(page.locator("text=Evidence submitted")).toBeVisible({ timeout: 5000 })
+		await expect(page.locator("text=Evidence submitted")).toBeVisible({
+			timeout: 5000,
+		})
 		await expect(page.locator("text=Pending Review")).toBeVisible()
 
 		// Step 7: Switch to admin wallet to approve milestone
@@ -342,7 +359,10 @@ test.describe("Enrollment to Milestone E2E Flow", () => {
 
 		// Switch to admin wallet (simulated by updating localStorage)
 		await page.evaluate(() => {
-			localStorage.setItem("admin_wallet", "GAADMIN456ADMINADMINADMINADMINADMINADMIN456")
+			localStorage.setItem(
+				"admin_wallet",
+				"GAADMIN456ADMINADMINADMINADMINADMINADMIN456",
+			)
 		})
 
 		// Navigate to admin dashboard
@@ -350,8 +370,10 @@ test.describe("Enrollment to Milestone E2E Flow", () => {
 		await page.waitForLoadState("networkidle")
 
 		// Find the submitted milestone report
-		const milestoneReport = page.locator(`text=${learnerAddress.substring(0, 10)}`)
-		expect(milestoneReport).toBeVisible()
+		const milestoneReport = page.locator(
+			`text=${learnerAddress.substring(0, 10)}`,
+		)
+		await expect(milestoneReport).toBeVisible()
 
 		// Approve the milestone
 		const approveButton = page.locator('button:has-text("Approve")').first()
@@ -364,7 +386,9 @@ test.describe("Enrollment to Milestone E2E Flow", () => {
 		await page.waitForLoadState("networkidle")
 
 		// Verify approval success
-		await expect(page.locator("text=Milestone approved")).toBeVisible({ timeout: 5000 })
+		await expect(page.locator("text=Milestone approved")).toBeVisible({
+			timeout: 5000,
+		})
 
 		// Step 8: Switch back to learner wallet
 		await page.evaluate(() => {
@@ -375,7 +399,10 @@ test.describe("Enrollment to Milestone E2E Flow", () => {
 		await page.goto("/me")
 		await page.waitForLoadState("networkidle")
 
-		const lrnBalance = page.locator('text="LRN Balance"').locator("..").locator("text=/[0-9]+/")
+		const lrnBalance = page
+			.locator('text="LRN Balance"')
+			.locator("..")
+			.locator("text=/[0-9]+/")
 		await expect(lrnBalance).toContainText(/100|LRN/)
 
 		// Step 10: Verify reputation rank updated
@@ -384,15 +411,15 @@ test.describe("Enrollment to Milestone E2E Flow", () => {
 
 		// Verify learner appears in leaderboard
 		const learnerInLeaderboard = page.locator('text="You"')
-		expect(learnerInLeaderboard).toBeVisible()
+		await expect(learnerInLeaderboard).toBeVisible()
 
 		// Verify rank is displayed
 		const rankBadge = page.locator('[data-testid="leaderboard-rank-badge"]')
-		expect(rankBadge).toBeVisible()
+		await expect(rankBadge).toBeVisible()
 
 		// Verify LRN balance in leaderboard
 		const leaderboardBalance = page.locator('text="100"')
-		expect(leaderboardBalance).toBeVisible()
+		await expect(leaderboardBalance).toBeVisible()
 	})
 
 	test("should handle multiple milestone submissions and approvals", async ({

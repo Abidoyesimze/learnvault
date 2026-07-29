@@ -224,7 +224,15 @@ export function useCourse() {
 		Record<string, MilestoneProgress>
 	>({})
 	const [submissionStatusMap, setSubmissionStatusMap] = useState<
-		Record<string, "pending" | "verified" | "rejected" | "none">
+		Record<
+			string,
+			| "pending"
+			| "verified"
+			| "rejected"
+			| "appealed"
+			| "final_rejected"
+			| "none"
+		>
 	>({})
 	const [escrowTimeoutMap, setEscrowTimeoutMap] = useState<
 		Record<string, EscrowTimeoutStatus>

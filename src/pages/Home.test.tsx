@@ -1,7 +1,6 @@
-import { describe, expect, it, vi } from "vitest"
 import userEvent from "@testing-library/user-event"
 import { MemoryRouter } from "react-router-dom"
-import { render, screen } from "../test/setup"
+import { describe, expect, it, vi } from "vitest"
 
 vi.mock("../hooks/useImpactMetrics", () => ({
 	useImpactWidgetData: vi.fn(),
@@ -20,10 +19,11 @@ vi.mock("../pages/Courses", () => ({
 }))
 
 import App from "../App"
-import Home from "./Home"
+import { useEnrolledCourses } from "../hooks/useCourses"
 import { useImpactWidgetData } from "../hooks/useImpactMetrics"
 import { useWallet } from "../hooks/useWallet"
-import { useEnrolledCourses } from "../hooks/useCourses"
+import { render, screen } from "../test/setup"
+import Home from "./Home"
 
 const mockImpactData = {
 	total_scholars_funded: 325,
@@ -32,10 +32,21 @@ const mockImpactData = {
 	total_usdc_disbursed: "42,000",
 }
 
-const setupMocks = ({ address, impactData, enrolledCourses }: {
+const setupMocks = ({
+	address,
+	impactData,
+	enrolledCourses,
+}: {
 	address?: string
 	impactData?: typeof mockImpactData
-	enrolledCourses?: Array<unknown>
+	enrolledCourses?: Array<{
+		courseId: string
+		title: string
+		completedCount: number
+		totalCount: number
+		progressPercent: number
+		milestones: Array<{ id: number; label: string; lrnReward: number }>
+	}>
 }) => {
 	vi.mocked(useWallet).mockReturnValue({
 		address,
@@ -72,9 +83,15 @@ describe("Home page", () => {
 			</MemoryRouter>,
 		)
 
-		expect(screen.getByRole("heading", { name: /Learning is the proof of work/i })).toBeInTheDocument()
-		expect(screen.getByRole("heading", { name: /How It Works/i })).toBeInTheDocument()
-		expect(screen.getByRole("heading", { name: /What You Get/i })).toBeInTheDocument()
+		expect(
+			screen.getByRole("heading", { name: /Learning is the proof of work/i }),
+		).toBeInTheDocument()
+		expect(
+			screen.getByRole("heading", { name: /How It Works/i }),
+		).toBeInTheDocument()
+		expect(
+			screen.getByRole("heading", { name: /What You Get/i }),
+		).toBeInTheDocument()
 		expect(screen.getByTestId("impact-stats")).toBeInTheDocument()
 		expect(screen.getByText(/Scholars funded/i)).toBeInTheDocument()
 		expect(screen.getByText(/LRN minted/i)).toBeInTheDocument()
@@ -96,7 +113,11 @@ describe("Home page", () => {
 	})
 
 	it("shows Go to Dashboard when a wallet is connected", () => {
-		setupMocks({ address: "GTEST1234567890ABCDEFGHIJKLMN9876543210ZYXWVUTSRQPO", impactData: mockImpactData, enrolledCourses: [] })
+		setupMocks({
+			address: "GTEST1234567890ABCDEFGHIJKLMN9876543210ZYXWVUTSRQPO",
+			impactData: mockImpactData,
+			enrolledCourses: [],
+		})
 
 		render(
 			<MemoryRouter>
@@ -104,10 +125,9 @@ describe("Home page", () => {
 			</MemoryRouter>,
 		)
 
-		expect(screen.getByRole("link", { name: /Go to Dashboard/i })).toHaveAttribute(
-			"href",
-			"/dashboard",
-		)
+		expect(
+			screen.getByRole("link", { name: /Go to Dashboard/i }),
+		).toHaveAttribute("href", "/dashboard")
 	})
 
 	it("renders total scholars and LRN minted from the impact API", () => {
@@ -132,14 +152,20 @@ describe("Home page", () => {
 			</MemoryRouter>,
 		)
 
-		const menuToggle = screen.getByRole("button", { name: /Open navigation menu/i })
+		const menuToggle = screen.getByRole("button", {
+			name: /Open navigation menu/i,
+		})
 		expect(menuToggle).toHaveAttribute("aria-expanded", "false")
 
 		await userEvent.click(menuToggle)
 		expect(menuToggle).toHaveAttribute("aria-expanded", "true")
-		expect(screen.getByLabelText(/Mobile primary/i)).toHaveClass("translate-x-0")
+		expect(screen.getByLabelText(/Mobile primary/i)).toHaveClass(
+			"translate-x-0",
+		)
 
-		const closeButton = screen.getByRole("button", { name: /Close mobile navigation menu/i })
+		const closeButton = screen.getByRole("button", {
+			name: /Close mobile navigation menu/i,
+		})
 		await userEvent.click(closeButton)
 		expect(menuToggle).toHaveAttribute("aria-expanded", "false")
 	})

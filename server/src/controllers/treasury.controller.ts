@@ -89,7 +89,7 @@ export const getTreasuryStats = async (
 
 		for (const event of response.events) {
 			const eventData = scValToNative(event.value)
-			const topics = event.topic.map((t: unknown) => scValToNative(t))
+			const topics = event.topic.map((t) => scValToNative(t))
 			const eventType = topics[0]
 
 			if (eventType === "deposit" || eventType === "Deposit") {
@@ -121,10 +121,9 @@ export const getTreasuryStats = async (
 					: assetAddress
 				const symbol = isLegacy ? "USDC" : symbolForAsset(assetAddress)
 				const rate = isLegacy ? 1.0 : usdRateForAsset(assetAddress)
-				const usdEquivalent = (
-					(Number(atomicUnits) / STROOPS) *
-					rate
-				).toFixed(2)
+				const usdEquivalent = ((Number(atomicUnits) / STROOPS) * rate).toFixed(
+					2,
+				)
 
 				return {
 					asset: resolvedAddress,
@@ -203,7 +202,7 @@ export const getTreasuryActivity = async (
 
 		for (const event of response.events) {
 			const eventData = scValToNative(event.value)
-			const topics = event.topic.map((t: unknown) => scValToNative(t))
+			const topics = event.topic.map((t) => scValToNative(t))
 			const eventType = topics[0]
 
 			if (eventType === "deposit" || eventType === "Deposit") {

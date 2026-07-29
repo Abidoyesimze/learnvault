@@ -20,7 +20,9 @@ export const FollowButton: React.FC<FollowButtonProps> = ({
 	const { address: currentUserAddress } = useWallet()
 	const queryClient = useQueryClient()
 	const [isHovered, setIsHovered] = useState(false)
-	const [optimisticFollowing, setOptimisticFollowing] = useState<boolean | null>(null)
+	const [optimisticFollowing, setOptimisticFollowing] = useState<
+		boolean | null
+	>(null)
 	const { showError } = useToast()
 
 	const isOwnProfile =
@@ -63,18 +65,23 @@ export const FollowButton: React.FC<FollowButtonProps> = ({
 			// Revert optimistic update on error
 			setOptimisticFollowing(null)
 			// Show error toast
-			showError(error instanceof Error ? error.message : "Failed to update follow status")
+			showError(
+				error instanceof Error
+					? error.message
+					: "Failed to update follow status",
+			)
 		},
 	})
 
 	if (!currentUserAddress || isOwnProfile) return null
 
 	// Use optimistic state if available, otherwise use initial or mutation state
-	const isFollowing = optimisticFollowing !== null 
-		? optimisticFollowing 
-		: mutation.isIdle
-		? isFollowingInitial
-		: !!mutation.variables
+	const isFollowing =
+		optimisticFollowing !== null
+			? optimisticFollowing
+			: mutation.isIdle
+				? isFollowingInitial
+				: !!mutation.variables
 
 	const handleClick = (e: React.MouseEvent) => {
 		e.preventDefault()

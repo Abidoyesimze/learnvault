@@ -1,8 +1,6 @@
 {
-  "permissions": {
-    "allow": [
-      "Bash(npm run *)"
-    ]
-  },
-  "$version": 3
+	"permissions": {
+		"allow": ["Bash(npm run *)"]
+	},
+	"$version": 3
 }

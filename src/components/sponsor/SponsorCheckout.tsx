@@ -27,7 +27,12 @@ export function SponsorCheckout() {
 	const [fileError, setFileError] = useState<string | null>(null)
 	const [isProcessing, setIsProcessing] = useState(false)
 	const [checkoutStep, setCheckoutStep] = useState<"setup" | "receipt">("setup")
-	const [txHash] = useState("0x" + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join(""))
+	const [txHash] = useState(
+		"0x" +
+			Array.from({ length: 64 }, () =>
+				Math.floor(Math.random() * 16).toString(16),
+			).join(""),
+	)
 	const [copiedId, setCopiedId] = useState<string | null>(null)
 
 	const fileInputRef = useRef<HTMLInputElement>(null)
@@ -37,14 +42,19 @@ export function SponsorCheckout() {
 	const XLM_TO_USDC_RATE = 0.35 // 1 XLM = 0.35 USDC equivalent
 
 	// Stellar Address validation regex
-	const isValidStellarAddress = (addr: string): { isValid: boolean; error?: string } => {
+	const isValidStellarAddress = (
+		addr: string,
+	): { isValid: boolean; error?: string } => {
 		const clean = addr.trim()
 		if (!clean) return { isValid: false, error: "Address is empty" }
 		if (!clean.startsWith("G")) {
 			return { isValid: false, error: "Must start with capital 'G'" }
 		}
 		if (clean.length !== 56) {
-			return { isValid: false, error: `Invalid length (${clean.length}/56 characters)` }
+			return {
+				isValid: false,
+				error: `Invalid length (${clean.length}/56 characters)`,
+			}
 		}
 		if (!/^[A-Z2-7]+$/.test(clean)) {
 			return { isValid: false, error: "Contains invalid base32 characters" }
@@ -57,7 +67,9 @@ export function SponsorCheckout() {
 		if (!rawInput.trim()) return []
 		// Split by comma, semi-colon, whitespace, or newlines
 		const lines = rawInput.split(/[\s,;]+/)
-		const uniqueLines = Array.from(new Set(lines.map((l) => l.trim()))).filter(Boolean)
+		const uniqueLines = Array.from(new Set(lines.map((l) => l.trim()))).filter(
+			Boolean,
+		)
 
 		return uniqueLines.map((addr) => {
 			const validation = isValidStellarAddress(addr)
@@ -121,7 +133,7 @@ export function SponsorCheckout() {
 				// Append to current raw input
 				setRawInput((prev) => {
 					const existing = prev.trim()
-					return existing 
+					return existing
 						? `${existing}\n${uniqueMatches.join("\n")}`
 						: uniqueMatches.join("\n")
 				})
@@ -182,8 +194,9 @@ export function SponsorCheckout() {
 								Sponsor <span className="text-gradient">Student Licenses</span>
 							</h1>
 							<p className="text-white/50 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
-								Purchase LearnVault education access licenses in bulk. Provide a list of Stellar
-								wallet addresses below to allocate access rights and automatically seed Soroban gas limits.
+								Purchase LearnVault education access licenses in bulk. Provide a
+								list of Stellar wallet addresses below to allocate access rights
+								and automatically seed Soroban gas limits.
 							</p>
 						</div>
 
@@ -336,10 +349,9 @@ export function SponsorCheckout() {
 												<span>Gas Buffer (per student)</span>
 												<span className="font-bold text-white font-mono flex items-center gap-1">
 													{XLM_GAS_PER_STUDENT} XLM
-													<HelpCircle
-														className="w-3.5 h-3.5 text-white/20 cursor-help"
-														title={`Stellar operations require gas seed base fees. We allocate XLM buffer converted to USDC.`}
-													/>
+													<span title="Stellar operations require gas seed base fees. We allocate XLM buffer converted to USDC.">
+														<HelpCircle className="w-3.5 h-3.5 text-white/20 cursor-help" />
+													</span>
 												</span>
 											</div>
 										</div>
@@ -349,21 +361,27 @@ export function SponsorCheckout() {
 										{/* Real-time costs calculations breakdown */}
 										<div className="space-y-3.5 text-xs font-normal">
 											<div className="flex justify-between items-center">
-												<span className="text-white/40">Access Licenses Total</span>
+												<span className="text-white/40">
+													Access Licenses Total
+												</span>
 												<span className="font-bold font-mono text-white">
 													{estimates.subtotalLicenses} USDC
 												</span>
 											</div>
 
 											<div className="flex justify-between items-center">
-												<span className="text-white/40">Stellar Execution Gas</span>
+												<span className="text-white/40">
+													Stellar Execution Gas
+												</span>
 												<span className="font-bold font-mono text-white">
 													{estimates.totalGasXLM.toFixed(2)} XLM
 												</span>
 											</div>
 
 											<div className="flex justify-between items-center">
-												<span className="text-white/40">Gas Cost (USDC Equiv.)</span>
+												<span className="text-white/40">
+													Gas Cost (USDC Equiv.)
+												</span>
 												<span className="font-bold font-mono text-white/50">
 													${estimates.totalGasUSD.toFixed(2)} USDC
 												</span>
@@ -379,7 +397,9 @@ export function SponsorCheckout() {
 											</span>
 											<span className="text-2xl sm:text-3xl font-black font-mono text-white">
 												{estimates.grandTotal.toFixed(2)}{" "}
-												<span className="text-xs text-white/40 font-bold">USDC</span>
+												<span className="text-xs text-white/40 font-bold">
+													USDC
+												</span>
 											</span>
 										</div>
 
@@ -397,9 +417,24 @@ export function SponsorCheckout() {
 										>
 											{isProcessing ? (
 												<span className="flex items-center justify-center gap-2">
-													<svg className="animate-spin h-4 w-4 text-brand-cyan" viewBox="0 0 24 24" fill="none">
-														<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-														<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+													<svg
+														className="animate-spin h-4 w-4 text-brand-cyan"
+														viewBox="0 0 24 24"
+														fill="none"
+													>
+														<circle
+															className="opacity-25"
+															cx="12"
+															cy="12"
+															r="10"
+															stroke="currentColor"
+															strokeWidth="4"
+														/>
+														<path
+															className="opacity-75"
+															fill="currentColor"
+															d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+														/>
 													</svg>
 													Signing Blockchain Payload...
 												</span>
@@ -429,10 +464,12 @@ export function SponsorCheckout() {
 								<CheckCircle2 className="w-10 h-10 text-brand-emerald" />
 							</div>
 							<h2 className="text-3xl sm:text-4xl font-black text-white leading-tight">
-								Sponsorship Transaction <span className="text-gradient">Completed</span>
+								Sponsorship Transaction{" "}
+								<span className="text-gradient">Completed</span>
 							</h2>
 							<p className="text-white/40 text-sm max-w-md">
-								Soroban smart contracts successfully executed. Access licenses minted and credited to recipient student addresses.
+								Soroban smart contracts successfully executed. Access licenses
+								minted and credited to recipient student addresses.
 							</p>
 						</div>
 
@@ -527,28 +564,32 @@ export function SponsorCheckout() {
 										Funded Recipients
 									</span>
 									<div className="max-h-[140px] overflow-y-auto pr-1 space-y-2">
-										{parsedAddresses.filter(a => a.isValid).map((item, idx) => (
-											<div
-												key={`funded-${item.address}-${idx}`}
-												className="p-3 bg-white/[0.02] border border-white/5 rounded-xl flex items-center justify-between text-xs"
-											>
-												<span className="font-mono text-white/60 overflow-hidden text-ellipsis whitespace-nowrap">
-													{item.address}
-												</span>
-												<button
-													type="button"
-													onClick={() => handleCopy(`addr-${idx}`, item.address)}
-													className="shrink-0 p-1 hover:bg-white/5 rounded-md text-white/30 hover:text-white transition-colors"
-													title="Copy address"
+										{parsedAddresses
+											.filter((a) => a.isValid)
+											.map((item, idx) => (
+												<div
+													key={`funded-${item.address}-${idx}`}
+													className="p-3 bg-white/[0.02] border border-white/5 rounded-xl flex items-center justify-between text-xs"
 												>
-													{copiedId === `addr-${idx}` ? (
-														<Check className="w-3.5 h-3.5 text-brand-emerald" />
-													) : (
-														<Copy className="w-3.5 h-3.5" />
-													)}
-												</button>
-											</div>
-										))}
+													<span className="font-mono text-white/60 overflow-hidden text-ellipsis whitespace-nowrap">
+														{item.address}
+													</span>
+													<button
+														type="button"
+														onClick={() =>
+															handleCopy(`addr-${idx}`, item.address)
+														}
+														className="shrink-0 p-1 hover:bg-white/5 rounded-md text-white/30 hover:text-white transition-colors"
+														title="Copy address"
+													>
+														{copiedId === `addr-${idx}` ? (
+															<Check className="w-3.5 h-3.5 text-brand-emerald" />
+														) : (
+															<Copy className="w-3.5 h-3.5" />
+														)}
+													</button>
+												</div>
+											))}
 									</div>
 								</div>
 							</div>

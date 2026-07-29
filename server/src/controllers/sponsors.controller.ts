@@ -358,7 +358,9 @@ export async function getOrganizationQuarterlyReport(
 		})
 	} catch (err) {
 		log.error({ err }, "Failed to generate quarterly sponsor report")
-		res.status(500).json({ error: "Failed to generate quarterly sponsor report" })
+		res
+			.status(500)
+			.json({ error: "Failed to generate quarterly sponsor report" })
 	}
 }
 

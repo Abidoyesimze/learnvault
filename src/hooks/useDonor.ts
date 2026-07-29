@@ -56,7 +56,9 @@ const extractNumber = (value: unknown): number => {
 	return match ? Number.parseInt(match[1] ?? "0", 10) : 0
 }
 
-const fetchDonorImpact = async (address: string): Promise<DonorImpact | null> => {
+const fetchDonorImpact = async (
+	address: string,
+): Promise<DonorImpact | null> => {
 	try {
 		const response = await fetch(`/api/donors/${address}/impact`)
 		if (!response.ok) return null
@@ -91,7 +93,9 @@ const readContractEvents = async (
 		result?: { events?: RpcEvent[] }
 	}
 	const events = payload.result?.events ?? []
-	return events.filter((event) => stringify(event).includes(walletAddress.toLowerCase()))
+	return events.filter((event) =>
+		stringify(event).includes(walletAddress.toLowerCase()),
+	)
 }
 
 export const useDonor = (): DonorData => {

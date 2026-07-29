@@ -1,6 +1,6 @@
 import { Button } from "@stellar/design-system"
-import React, { useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
+import React, { useState } from "react"
 import ReactMarkdown from "react-markdown"
 import {
 	deleteReply,
@@ -8,9 +8,9 @@ import {
 	replyToThread,
 	useForumThreadDetail,
 } from "../../hooks/useForum"
-import { WalletAddressPill } from "../WalletAddressPill"
-import { EmptyState as StateEmpty } from "../states/emptyState"
 import { connectWallet } from "../../util/wallet"
+import { EmptyState as StateEmpty } from "../states/emptyState"
+import { WalletAddressPill } from "../WalletAddressPill"
 
 interface ThreadDetailProps {
 	courseId: string
@@ -27,10 +27,11 @@ export const ThreadDetail: React.FC<ThreadDetailProps> = ({
 	currentAddress,
 	isAdmin,
 }) => {
-	const { data: thread, isLoading, error } = useForumThreadDetail(
-		courseId,
-		threadId,
-	)
+	const {
+		data: thread,
+		isLoading,
+		error,
+	} = useForumThreadDetail(courseId, threadId)
 
 	const queryClient = useQueryClient()
 	const [replyContent, setReplyContent] = useState("")
@@ -92,9 +93,7 @@ export const ThreadDetail: React.FC<ThreadDetailProps> = ({
 
 	if (isLoading) {
 		return (
-			<div className="text-white/60 animate-pulse">
-				Loading discussion...
-			</div>
+			<div className="text-white/60 animate-pulse">Loading discussion...</div>
 		)
 	}
 
@@ -124,9 +123,7 @@ export const ThreadDetail: React.FC<ThreadDetailProps> = ({
 				</button>
 
 				<div className="flex justify-between items-start gap-4 mb-6">
-					<h2 className="text-3xl font-bold text-white">
-						{thread.title}
-					</h2>
+					<h2 className="text-3xl font-bold text-white">{thread.title}</h2>
 
 					{(isAdmin || currentAddress === thread.author_address) && (
 						<button
@@ -163,10 +160,9 @@ export const ThreadDetail: React.FC<ThreadDetailProps> = ({
 						ctaLabel={currentAddress ? "Add a reply" : "Connect Wallet"}
 						onCtaClick={async () => {
 							if (currentAddress) {
-								const el =
-									document.querySelector<HTMLTextAreaElement>(
-										"textarea[placeholder*='Type your response']",
-									)
+								const el = document.querySelector<HTMLTextAreaElement>(
+									"textarea[placeholder*='Type your response']",
+								)
 
 								el?.focus()
 							} else {
@@ -183,26 +179,16 @@ export const ThreadDetail: React.FC<ThreadDetailProps> = ({
 							>
 								<div className="flex justify-between items-start">
 									<div className="flex items-center gap-3 text-xs text-white/50">
-										<WalletAddressPill
-											address={reply.author_address}
-										/>
+										<WalletAddressPill address={reply.author_address} />
 										<span>•</span>
-										<span>
-											{new Date(
-												reply.created_at,
-											).toLocaleString()}
-										</span>
+										<span>{new Date(reply.created_at).toLocaleString()}</span>
 									</div>
 
-									{(isAdmin ||
-										currentAddress ===
-											reply.author_address) && (
+									{(isAdmin || currentAddress === reply.author_address) && (
 										<button
 											type="button"
 											className="text-white/30 hover:text-red-400 transition-colors px-2 py-1"
-											onClick={() =>
-												handleDeleteReply(reply.id)
-											}
+											onClick={() => handleDeleteReply(reply.id)}
 											title="Delete reply"
 											aria-label="Delete reply"
 										>
@@ -212,9 +198,7 @@ export const ThreadDetail: React.FC<ThreadDetailProps> = ({
 								</div>
 
 								<div className="prose prose-sm prose-invert max-w-none text-white/70">
-									<ReactMarkdown>
-										{reply.content}
-									</ReactMarkdown>
+									<ReactMarkdown>{reply.content}</ReactMarkdown>
 								</div>
 							</div>
 						))}
@@ -230,9 +214,7 @@ export const ThreadDetail: React.FC<ThreadDetailProps> = ({
 						<textarea
 							placeholder="Type your response here (Markdown supported)..."
 							value={replyContent}
-							onChange={(e) =>
-								setReplyContent(e.target.value)
-							}
+							onChange={(e) => setReplyContent(e.target.value)}
 							rows={4}
 							className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-hidden focus:border-brand-cyan transition-colors font-mono text-sm"
 						/>
@@ -242,9 +224,7 @@ export const ThreadDetail: React.FC<ThreadDetailProps> = ({
 								variant="primary"
 								size="sm"
 								onClick={handleReply}
-								disabled={
-									isSubmitting || !replyContent.trim()
-								}
+								disabled={isSubmitting || !replyContent.trim()}
 							>
 								{isSubmitting ? "Posting..." : "Post Reply"}
 							</Button>
@@ -253,12 +233,9 @@ export const ThreadDetail: React.FC<ThreadDetailProps> = ({
 				</div>
 			) : (
 				<div className="bg-white/5 p-6 rounded-2xl text-center">
-					<p className="text-white/60 mb-3">
-						You must be connected to reply.
-					</p>
+					<p className="text-white/60 mb-3">You must be connected to reply.</p>
 				</div>
 			)}
 		</div>
 	)
-}
 }

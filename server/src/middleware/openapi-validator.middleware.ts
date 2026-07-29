@@ -1,11 +1,11 @@
-import path from "node:path"
 import fs from "node:fs"
-import type { Express } from "express"
+import path from "node:path"
+import { type Express } from "express"
 import { logger } from "../lib/logger"
 
 const log = logger.child({ module: "openapi-validator" })
 
-function resolveApiSpecPath(): string {
+export function resolveApiSpecPath(): string {
 	// When running via `server/` scripts, CWD is usually `server/`.
 	const fromCwd = path.resolve(process.cwd(), "..", "docs", "openapi.yaml")
 	if (fs.existsSync(fromCwd)) return fromCwd
@@ -42,4 +42,3 @@ export async function maybeMountOpenApiValidator(app: Express): Promise<void> {
 
 	log.info({ apiSpec }, "OpenAPI validator enabled")
 }
-

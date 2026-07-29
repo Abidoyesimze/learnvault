@@ -1,4 +1,4 @@
-import { type Page, type Route } from "@playwright/test"
+import { type Page, type Route, expect } from "@playwright/test"
 
 /**
  * Wallet addresses for different roles in the scholarship lifecycle.
@@ -55,7 +55,10 @@ export async function installScholarshipApiMocks(page: Page) {
 	let nextMilestoneId = 1000
 	const proposals = new Map<number, ScholarshipProposalState>()
 	const milestones = new Map<number, ScholarshipMilestoneState>()
-	const contributions = new Map<number, { donorAddress: string; amount: string; txHash: string }[]>()
+	const contributions = new Map<
+		number,
+		{ donorAddress: string; amount: string; txHash: string }[]
+	>()
 
 	// Initialize with a test proposal that can be voted on
 	const initialProposal: ScholarshipProposalState = {
@@ -168,7 +171,8 @@ export async function installScholarshipApiMocks(page: Page) {
 				deadline: proposal.deadline,
 				created_at: proposal.createdAt,
 				funded_amount: proposal.fundedAmount,
-				is_voting_open: proposal.status === "pending" || proposal.status === "funded",
+				is_voting_open:
+					proposal.status === "pending" || proposal.status === "funded",
 			})
 		}
 
@@ -207,7 +211,9 @@ export async function installScholarshipApiMocks(page: Page) {
 			if (!proposal) {
 				return fulfillJson({ error: "Proposal not found" }, 404)
 			}
-			const newFunded = String(Number(proposal.fundedAmount) + Number(body.amount))
+			const newFunded = String(
+				Number(proposal.fundedAmount) + Number(body.amount),
+			)
 			proposal.fundedAmount = newFunded
 			proposal.donorAddress = body.donor_address
 			if (Number(newFunded) >= Number(proposal.amountUsdc)) {
@@ -231,14 +237,20 @@ export async function installScholarshipApiMocks(page: Page) {
 		}
 
 		// GET /api/scholarships/contributions/:proposalId - Get contributions
-		if (pathname.match(/^\/api\/scholarships\/contributions\/\d+$/) && method === "GET") {
+		if (
+			pathname.match(/^\/api\/scholarships\/contributions\/\d+$/) &&
+			method === "GET"
+		) {
 			const proposalId = Number.parseInt(pathname.split("/").pop() ?? "0", 10)
 			const contribs = contributions.get(proposalId) ?? []
 			return fulfillJson({ contributions: contribs, total: contribs.length })
 		}
 
 		// POST /api/admin/proposals/:id/approve - Admin approves proposal (tranche 1)
-		if (pathname.match(/^\/api\/admin\/proposals\/\d+\/approve$/) && method === "POST") {
+		if (
+			pathname.match(/^\/api\/admin\/proposals\/\d+\/approve$/) &&
+			method === "POST"
+		) {
 			const proposalId = Number.parseInt(pathname.split("/")[4] ?? "0", 10)
 			const proposal = proposals.get(proposalId)
 			if (!proposal) {
@@ -289,7 +301,8 @@ export async function installScholarshipApiMocks(page: Page) {
 
 		// GET /api/scholar/milestones - Get scholar's milestones
 		if (pathname === "/api/scholar/milestones" && method === "GET") {
-			const scholarAddress = searchParams.get("address") ?? SCHOLAR_WALLET_ADDRESS
+			const scholarAddress =
+				searchParams.get("address") ?? SCHOLAR_WALLET_ADDRESS
 			const scholarMilestones = Array.from(milestones.values()).filter(
 				(m) => m.scholarAddress.toLowerCase() === scholarAddress.toLowerCase(),
 			)
@@ -326,7 +339,10 @@ export async function installScholarshipApiMocks(page: Page) {
 		}
 
 		// POST /api/admin/milestones/:id/approve - Admin approves milestone (releases tranche)
-		if (pathname.match(/^\/api\/admin\/milestones\/\d+\/approve$/) && method === "POST") {
+		if (
+			pathname.match(/^\/api\/admin\/milestones\/\d+\/approve$/) &&
+			method === "POST"
+		) {
 			const milestoneId = Number.parseInt(pathname.split("/")[4] ?? "0", 10)
 			const milestone = milestones.get(milestoneId)
 			if (!milestone) {
@@ -343,7 +359,10 @@ export async function installScholarshipApiMocks(page: Page) {
 		}
 
 		// GET /api/governance/voting-power/:address - Get voting power
-		if (pathname.match(/^\/api\/governance\/voting-power\/.+$/) && method === "GET") {
+		if (
+			pathname.match(/^\/api\/governance\/voting-power\/.+$/) &&
+			method === "GET"
+		) {
 			return fulfillJson({ gov_balance: "100" })
 		}
 
@@ -388,7 +407,10 @@ export async function switchWallet(page: Page, address: string) {
 			localStorage.setItem("walletType", JSON.stringify("hot-wallet"))
 			localStorage.setItem("walletAddress", JSON.stringify(address))
 			localStorage.setItem("walletNetwork", JSON.stringify("TESTNET"))
-			localStorage.setItem("networkPassphrase", JSON.stringify(networkPassphrase))
+			localStorage.setItem(
+				"networkPassphrase",
+				JSON.stringify(networkPassphrase),
+			)
 
 			// Update the mock Freighter API with new address
 			;(window as any).freighterApi = {
@@ -417,8 +439,6 @@ export async function switchWallet(page: Page, address: string) {
  * Waits for and verifies a toast notification appears.
  */
 export async function expectToast(page: Page, expectedText: string | RegExp) {
-	const toastLocator = page.locator('[data-sonner-toast]')
+	const toastLocator = page.locator("[data-sonner-toast]")
 	await expect(toastLocator).toContainText(expectedText)
 }
-
-import { expect } from "@playwright/test"

@@ -259,20 +259,6 @@ const castVoteSchema = z.object({
 	signature: z.string().optional(),
 })
 
-const castVoteSchema = z.object({
-	proposal_id: z
-		.number()
-		.int()
-		.positive("proposal_id must be a positive integer"),
-	voter_address: z
-		.string()
-		.min(56, "voter_address must be a valid Stellar address")
-		.max(56, "voter_address must be a valid Stellar address")
-		.startsWith("G", "voter_address must be a valid Stellar address"),
-	support: z.boolean(),
-	signature: z.string().optional(),
-})
-
 export async function createGovernanceProposal(
 	req: Request,
 	res: Response,
@@ -501,7 +487,8 @@ export async function castVote(req: Request, res: Response): Promise<void> {
 		const proposalRow = updatedProposal.rows[0]
 		const votesFor = BigInt(proposalRow?.votes_for ?? "0")
 		const votesAgainst = BigInt(proposalRow?.votes_against ?? "0")
-		const proposalTitle: string = proposalRow?.title ?? `Proposal #${proposal_id}`
+		const proposalTitle: string =
+			proposalRow?.title ?? `Proposal #${proposal_id}`
 		const authorAddress: string = proposalRow?.author_address ?? ""
 
 		// 9. Check if the proposal has crossed a quorum threshold and notify the author

@@ -1,5 +1,5 @@
 import crypto from "node:crypto"
-import { type Database } from "pg"
+import { type Pool } from "pg"
 
 const KEY_ROTATION_WINDOW_HOURS = 1
 const KEY_ROTATION_ALERT_DAYS = 90
@@ -34,7 +34,7 @@ export type AdminKeyRotationService = {
 }
 
 export function createAdminKeyRotationService(
-	db: Database,
+	db: Pool,
 ): AdminKeyRotationService {
 	function hashKey(key: string): string {
 		return crypto.createHash("sha256").update(key).digest("hex")
@@ -162,9 +162,11 @@ export function createAdminKeyRotationService(
 			)
 		},
 
-		async checkRotationStatus(
-			adminAddress: string,
-		): Promise<{ lastRotated: Date; daysSinceRotation: number; needsRotation: boolean }> {
+		async checkRotationStatus(adminAddress: string): Promise<{
+			lastRotated: Date
+			daysSinceRotation: number
+			needsRotation: boolean
+		}> {
 			const result = await db.query(
 				`SELECT last_rotated_at FROM admin_api_keys 
         WHERE admin_address = $1 

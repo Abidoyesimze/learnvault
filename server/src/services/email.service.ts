@@ -1,6 +1,6 @@
 import sgMail from "@sendgrid/mail"
-import { Resend } from "resend"
 import nodemailer from "nodemailer"
+import { Resend } from "resend"
 import { logger } from "../lib/logger"
 import {
 	templates,
@@ -36,10 +36,10 @@ export class EmailService {
 		this.sendGridApiKey = resolvedSendGridApiKey || undefined
 		this.smtpConfigured = Boolean(
 			process.env.SMTP_HOST &&
-				process.env.SMTP_PORT &&
-				process.env.SMTP_USER &&
-				process.env.SMTP_PASS &&
-				process.env.SMTP_FROM,
+			process.env.SMTP_PORT &&
+			process.env.SMTP_USER &&
+			process.env.SMTP_PASS &&
+			process.env.SMTP_FROM,
 		)
 
 		if (resendApiKey) {

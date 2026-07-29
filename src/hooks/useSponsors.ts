@@ -67,16 +67,21 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
 	return response.json() as Promise<T>
 }
 
-export function useSponsorOrganizationProfile(walletAddress: string | undefined) {
+export function useSponsorOrganizationProfile(
+	walletAddress: string | undefined,
+) {
 	return useQuery({
 		queryKey: ["sponsors", "organization", walletAddress],
 		queryFn: async (): Promise<SponsorOrganizationProfile | null> => {
 			if (!walletAddress) return null
-			const response = await fetch(`/api/sponsors/organizations/${walletAddress}`)
+			const response = await fetch(
+				`/api/sponsors/organizations/${walletAddress}`,
+			)
 			if (response.status === 404) return null
 			if (!response.ok) throw new Error("Failed to load organization profile")
-			const data =
-				(await response.json()) as { profile: SponsorOrganizationProfile }
+			const data = (await response.json()) as {
+				profile: SponsorOrganizationProfile
+			}
 			return data.profile
 		},
 		enabled: Boolean(walletAddress),

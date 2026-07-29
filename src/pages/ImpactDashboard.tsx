@@ -61,12 +61,14 @@ export default function ImpactDashboard() {
 	const [embedCopied, setEmbedCopied] = useState(false)
 
 	const maxCourseCount = useMemo(() => {
-		const counts = data?.top_completed_courses.map((course) => course.completed_count) ?? []
+		const counts =
+			data?.top_completed_courses.map((course) => course.completed_count) ?? []
 		return counts.length > 0 ? Math.max(...counts, 1) : 1
 	}, [data])
 
 	const maxQuarterlyScholars = useMemo(() => {
-		const values = data?.trends.quarterly.map((entry) => entry.scholars_funded) ?? []
+		const values =
+			data?.trends.quarterly.map((entry) => entry.scholars_funded) ?? []
 		return values.length > 0 ? Math.max(...values, 1) : 1
 	}, [data])
 
@@ -121,7 +123,8 @@ export default function ImpactDashboard() {
 					Scholarship Impact Dashboard
 				</h1>
 				<p className="mt-3 max-w-3xl text-white/60">
-					Transparent funding, learner outcomes, and regional reach. All figures are public and updated continuously.
+					Transparent funding, learner outcomes, and regional reach. All figures
+					are public and updated continuously.
 				</p>
 			</header>
 
@@ -153,7 +156,9 @@ export default function ImpactDashboard() {
 								<div key={course.course_id}>
 									<div className="mb-1 flex items-center justify-between text-sm">
 										<span>{course.course_title}</span>
-										<span className="text-white/60">{course.completed_count}</span>
+										<span className="text-white/60">
+											{course.completed_count}
+										</span>
 									</div>
 									<div className="h-2 rounded-full bg-white/10">
 										<div
@@ -168,7 +173,9 @@ export default function ImpactDashboard() {
 				</div>
 
 				<div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
-					<h2 className="text-2xl font-black">Countries / Regions Represented</h2>
+					<h2 className="text-2xl font-black">
+						Countries / Regions Represented
+					</h2>
 					<p className="mt-2 text-white/60">
 						{data.countries_regions.length} regions reported by scholars
 					</p>
@@ -261,10 +268,18 @@ export default function ImpactDashboard() {
 	)
 }
 
-function MetricCard({ title, children }: { title: string; children: ReactNode }) {
+function MetricCard({
+	title,
+	children,
+}: {
+	title: string
+	children: ReactNode
+}) {
 	return (
 		<div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5">
-			<p className="text-xs font-black uppercase tracking-[0.2em] text-white/50">{title}</p>
+			<p className="text-xs font-black uppercase tracking-[0.2em] text-white/50">
+				{title}
+			</p>
 			<p className="mt-3 text-3xl font-black text-brand-cyan">{children}</p>
 		</div>
 	)

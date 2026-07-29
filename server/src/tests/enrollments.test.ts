@@ -45,6 +45,17 @@ const testJwtService = {
 		return { sub: decoded.sub, jti: decoded.jti ?? "test-jti" }
 	},
 	revokeToken: async (_token: string) => {},
+	signRefreshToken: () => "mock-refresh-token",
+	issueTokenPair: () => ({
+		accessToken: "mock-token",
+		refreshToken: "mock-refresh-token",
+	}),
+	verifyRefreshToken: async () => ({ sub: "mock-address", jti: "mock-jti" }),
+	rotateRefreshToken: async () => ({
+		accessToken: "mock-token",
+		refreshToken: "mock-refresh-token",
+		sub: "mock-address",
+	}),
 }
 
 const buildApp = (): Express => {

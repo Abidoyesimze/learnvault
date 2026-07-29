@@ -373,9 +373,7 @@ describe("DaoPropose", () => {
 			mockHasProposalDraft.mockReturnValue(true)
 			render(<DaoPropose />, { wrapper: createWrapper() })
 
-			expect(
-				screen.getByText(/You have an unsaved draft/i),
-			).toBeInTheDocument()
+			expect(screen.getByText(/You have an unsaved draft/i)).toBeInTheDocument()
 			expect(screen.getByText("Restore Draft")).toBeInTheDocument()
 		})
 

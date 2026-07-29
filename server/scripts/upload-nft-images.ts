@@ -1,8 +1,8 @@
-import dotenv from "dotenv"
 import path from "path"
+import dotenv from "dotenv"
 
 // Resolve the path relative to process.cwd() assuming we run from server/ folder
-dotenv.config({ path: path.resolve(process.cwd(), '.env') })
+dotenv.config({ path: path.resolve(process.cwd(), ".env") })
 
 import fs from "fs"
 import { pinFileToIPFS } from "../src/services/pinata.service"
@@ -35,7 +35,9 @@ async function uploadImages() {
 		console.log(`✓ ${imageName}: ipfs://${cid}`)
 	}
 
-	console.log("\nUpdate IMAGE_CID_MAP in credentials.controller.ts with these CIDs:")
+	console.log(
+		"\nUpdate IMAGE_CID_MAP in credentials.controller.ts with these CIDs:",
+	)
 	console.log(JSON.stringify(cidMap, null, 2))
 }
 

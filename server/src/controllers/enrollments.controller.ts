@@ -100,18 +100,18 @@ export const createEnrollment = async (
 		}
 
 		// Validate prerequisites
-		const courseResult = await pool.query(
+		const courseDetails = await pool.query(
 			"SELECT id, slug, title, prerequisites FROM courses WHERE slug = $1 OR id::text = $1",
 			[course_id],
 		)
-		if (courseResult.rows.length === 0) {
+		if (courseDetails.rows.length === 0) {
 			res.status(404).json({
 				error: "Course not found",
 			})
 			return
 		}
 
-		const course = courseResult.rows[0]
+		const course = courseDetails.rows[0]
 		const prerequisites = course.prerequisites || []
 
 		if (prerequisites.length > 0) {
@@ -119,14 +119,18 @@ export const createEnrollment = async (
 				"SELECT id, slug, title FROM courses WHERE id = ANY($1::integer[])",
 				[prerequisites],
 			)
-			const prereqSlugs = prereqsResult.rows.map((r: { slug: string }) => r.slug)
+			const prereqSlugs = prereqsResult.rows.map(
+				(r: { slug: string }) => r.slug,
+			)
 
 			const completedResult = await pool.query(
 				"SELECT course_id FROM scholar_nfts WHERE scholar_address = $1 AND course_id = ANY($2::text[]) AND revoked = FALSE",
 				[learner_address, prereqSlugs],
 			)
 
-			const completedSlugs = new Set(completedResult.rows.map((r: { course_id: string }) => r.course_id))
+			const completedSlugs = new Set(
+				completedResult.rows.map((r: { course_id: string }) => r.course_id),
+			)
 			const unmet = []
 			for (const r of prereqsResult.rows) {
 				if (!completedSlugs.has(r.slug)) {
@@ -151,9 +155,7 @@ export const createEnrollment = async (
 			 WHERE c.slug = $1 OR c.id::text = $1`,
 			[course_id],
 		)
-		const contentVersion = Number(
-			versionResult.rows[0]?.content_version ?? 1,
-		)
+		const contentVersion = Number(versionResult.rows[0]?.content_version ?? 1)
 
 		const result = await pool.query(
 			`INSERT INTO enrollments (learner_address, course_id, tx_hash, content_version)

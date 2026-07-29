@@ -3,9 +3,13 @@ import { pool } from "./index"
 export type NotificationType =
 	| "milestone_approved"
 	| "milestone_rejected"
+	| "milestone_appeal"
+	| "milestone_appeal_approved"
+	| "milestone_appeal_rejected"
 	| "vote_result"
 	| "disbursement"
 	| "proposal_passed"
+	| "voting_deadline_reminder"
 
 export interface Notification {
 	id: number
@@ -43,12 +47,18 @@ export interface PushSubscriptionInput {
 export interface NotificationPreferences {
 	milestone_approved: boolean
 	milestone_rejected: boolean
+	milestone_appeal: boolean
+	milestone_appeal_approved: boolean
+	milestone_appeal_rejected: boolean
 	vote_result: boolean
 	disbursement: boolean
+	proposal_passed: boolean
+	voting_deadline_reminder: boolean
 	email_milestone_approved: boolean
 	email_milestone_rejected: boolean
 	email_vote_result: boolean
 	email_disbursement: boolean
+	email_voting_deadline_reminder: boolean
 	quiet_hours_start: string | null
 	quiet_hours_end: string | null
 	quiet_hours_timezone: string | null
@@ -76,7 +86,10 @@ export async function recordNotificationDelivery(
 			],
 		)
 	} catch (err) {
-		console.error("[notifications-store] recordNotificationDelivery failed:", err)
+		console.error(
+			"[notifications-store] recordNotificationDelivery failed:",
+			err,
+		)
 	}
 }
 
@@ -203,7 +216,9 @@ export async function upsertPushSubscription(
 	)
 }
 
-export async function getPushSubscriptions(recipientAddress: string): Promise<
+export async function getPushSubscriptions(
+	recipientAddress: string,
+): Promise<
 	Array<{ endpoint: string; keys: { p256dh: string; auth: string } }>
 > {
 	const result = await pool.query(
@@ -242,10 +257,12 @@ export async function getNotificationPreferences(
 			milestone_rejected,
 			vote_result,
 			disbursement,
+			voting_deadline_reminder,
 			email_milestone_approved,
 			email_milestone_rejected,
 			email_vote_result,
 			email_disbursement,
+			email_voting_deadline_reminder,
 			quiet_hours_start,
 			quiet_hours_end,
 			quiet_hours_timezone
@@ -264,10 +281,12 @@ export async function getNotificationPreferences(
 			milestone_rejected,
 			vote_result,
 			disbursement,
+			voting_deadline_reminder,
 			email_milestone_approved,
 			email_milestone_rejected,
 			email_vote_result,
 			email_disbursement,
+			email_voting_deadline_reminder,
 			quiet_hours_start,
 			quiet_hours_end,
 			quiet_hours_timezone`,
@@ -281,7 +300,9 @@ export async function updateNotificationPreferences(
 	updates: Partial<NotificationPreferences>,
 ): Promise<NotificationPreferences> {
 	await getNotificationPreferences(recipientAddress)
-	const fields = Object.entries(updates).filter(([, value]) => value !== undefined)
+	const fields = Object.entries(updates).filter(
+		([, value]) => value !== undefined,
+	)
 	if (fields.length === 0) {
 		return getNotificationPreferences(recipientAddress)
 	}
@@ -296,10 +317,12 @@ export async function updateNotificationPreferences(
 			milestone_rejected,
 			vote_result,
 			disbursement,
+			voting_deadline_reminder,
 			email_milestone_approved,
 			email_milestone_rejected,
 			email_vote_result,
 			email_disbursement,
+			email_voting_deadline_reminder,
 			quiet_hours_start,
 			quiet_hours_end,
 			quiet_hours_timezone`,

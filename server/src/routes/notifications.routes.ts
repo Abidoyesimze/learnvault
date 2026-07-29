@@ -1,4 +1,4 @@
-import { Router } from "express"
+import { Router, type Response } from "express"
 
 import {
 	getNotifications,
@@ -10,19 +10,13 @@ import {
 	unsubscribePush,
 	updatePreferences,
 } from "../controllers/notifications.controller"
-import { authMiddleware } from "../middleware/auth.middleware"
-import type { AuthRequest } from "../middleware/auth.middleware"
-import { type Response } from "express"
+import { authMiddleware, type AuthRequest } from "../middleware/auth.middleware"
 
 export const notificationsRouter = Router()
 
-notificationsRouter.get(
-	"/notifications",
-	authMiddleware,
-	(req, res) => {
-		void getNotifications(req as AuthRequest, res as Response)
-	},
-)
+notificationsRouter.get("/notifications", authMiddleware, (req, res) => {
+	void getNotifications(req as AuthRequest, res as Response)
+})
 
 /**
  * @openapi
@@ -108,9 +102,13 @@ notificationsRouter.patch(
 	},
 )
 
-notificationsRouter.post("/notifications/subscribe", authMiddleware, (req, res) => {
-	void subscribePush(req as AuthRequest, res as Response)
-})
+notificationsRouter.post(
+	"/notifications/subscribe",
+	authMiddleware,
+	(req, res) => {
+		void subscribePush(req as AuthRequest, res as Response)
+	},
+)
 
 notificationsRouter.delete(
 	"/notifications/subscribe",
@@ -120,9 +118,13 @@ notificationsRouter.delete(
 	},
 )
 
-notificationsRouter.get("/notifications/preferences", authMiddleware, (req, res) => {
-	void getPreferences(req as AuthRequest, res as Response)
-})
+notificationsRouter.get(
+	"/notifications/preferences",
+	authMiddleware,
+	(req, res) => {
+		void getPreferences(req as AuthRequest, res as Response)
+	},
+)
 
 notificationsRouter.patch(
 	"/notifications/preferences",

@@ -1,4 +1,4 @@
-import type { ProposalType } from "../pages/DaoPropose"
+import { type ProposalType } from "../pages/DaoPropose"
 
 export interface ProposalDraft {
 	title: string
@@ -18,7 +18,8 @@ export interface ProposalDraft {
 
 const DRAFT_STORAGE_KEY = "learnvault:proposal-draft"
 
-const isBrowser = typeof window !== "undefined" && typeof localStorage !== "undefined"
+const isBrowser =
+	typeof window !== "undefined" && typeof localStorage !== "undefined"
 
 export function saveProposalDraft(data: Omit<ProposalDraft, "savedAt">): void {
 	if (!isBrowser) return

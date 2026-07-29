@@ -10,12 +10,19 @@ import { listEscrowTimeoutsForScholar } from "../services/escrow-timeout.service
 import { stellarContractService } from "../services/stellar-contract.service"
 
 type ApiMilestoneStatus = "pending" | "verified" | "rejected"
-type InternalMilestoneStatus = "pending" | "approved" | "rejected"
+type InternalMilestoneStatus =
+	| "pending"
+	| "approved"
+	| "rejected"
+	| "appealed"
+	| "final_rejected"
 
 function mapInternalStatus(
 	status: InternalMilestoneStatus,
 ): ApiMilestoneStatus {
 	if (status === "approved") return "verified"
+	if (status === "appealed") return "pending"
+	if (status === "final_rejected") return "rejected"
 	return status
 }
 

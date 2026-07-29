@@ -92,7 +92,9 @@ describe("useTreasury", () => {
 		vi.advanceTimersByTime(60_000)
 
 		// wait for the refetch to complete
-		await waitFor(() => expect(mockFetch.mock.calls.length).toBeGreaterThan(callCountAtLoad))
+		await waitFor(() =>
+			expect(mockFetch.mock.calls.length).toBeGreaterThan(callCountAtLoad),
+		)
 
 		vi.useRealTimers()
 	})

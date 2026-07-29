@@ -4,3 +4,4 @@ Cargo.lock
 target/
 target_local/
 contracts/
+docs/openapi.yaml

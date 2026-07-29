@@ -2,8 +2,6 @@ import { Router } from "express"
 
 import {
 	applyForScholarship,
-	contributeToScholarship,
-	getProposalContributors,
 	getScholarshipMetrics,
 } from "../controllers/scholarships.controller"
 import { authMiddleware } from "../middleware/auth.middleware"
@@ -44,6 +42,7 @@ scholarshipsRouter.get("/scholarships/metrics", (req, res) => {
 
 /**
  * @openapi
+ * /api/scholarships/apply:
  *   post:
  *     tags: [Scholarships]
  *     summary: Submit a scholarship application

@@ -150,12 +150,8 @@ async function installCredentialMocks(page: Page) {
 		}
 
 		// --- Public credential verification ---
-		if (
-			pathname === `/api/credentials/${NFT_TOKEN_ID}` &&
-			method === "GET"
-		) {
-			if (!mintedNft)
-				return fulfillJson(route, { error: "Not found" }, 404)
+		if (pathname === `/api/credentials/${NFT_TOKEN_ID}` && method === "GET") {
+			if (!mintedNft) return fulfillJson(route, { error: "Not found" }, 404)
 			return fulfillJson(route, mintedNft)
 		}
 
@@ -216,9 +212,7 @@ test.describe("Credential NFT flow", () => {
 
 		await page.goto(`/admin/programs/${PROGRAM_ID}`)
 
-		await expect(
-			page.getByTestId("mint-credential-btn"),
-		).toBeEnabled()
+		await expect(page.getByTestId("mint-credential-btn")).toBeEnabled()
 
 		await page.getByTestId("mint-credential-btn").click()
 
@@ -245,9 +239,7 @@ test.describe("Credential NFT flow", () => {
 
 		await page.goto(`/profile/${E2E_WALLET_ADDRESS}`)
 
-		await expect(
-			page.getByTestId("credential-nft-card"),
-		).toBeVisible()
+		await expect(page.getByTestId("credential-nft-card")).toBeVisible()
 		await expect(page.getByTestId("credential-nft-card")).toContainText(
 			PROGRAM_NAME,
 		)
@@ -276,9 +268,9 @@ test.describe("Credential NFT flow", () => {
 		)
 
 		// Scholar address matches
-		await expect(
-			page.getByTestId("credential-scholar-address"),
-		).toContainText(E2E_WALLET_ADDRESS.slice(0, 6))
+		await expect(page.getByTestId("credential-scholar-address")).toContainText(
+			E2E_WALLET_ADDRESS.slice(0, 6),
+		)
 
 		// On-chain transaction hash is present
 		await expect(page.getByTestId("credential-tx-hash")).toContainText(
@@ -286,9 +278,9 @@ test.describe("Credential NFT flow", () => {
 		)
 
 		// Validity badge
-		await expect(
-			page.getByTestId("credential-valid-badge"),
-		).toContainText(/valid/i)
+		await expect(page.getByTestId("credential-valid-badge")).toContainText(
+			/valid/i,
+		)
 	})
 
 	test("6. Share link copies to clipboard and resolves to the credential page", async ({
@@ -311,15 +303,13 @@ test.describe("Credential NFT flow", () => {
 		await expect(page.getByTestId("copy-share-link")).toContainText(/copied/i)
 
 		// Clipboard contains a URL that includes the token id
-		const clipboard = await page.evaluate(() =>
-			navigator.clipboard.readText(),
-		)
+		const clipboard = await page.evaluate(() => navigator.clipboard.readText())
 		expect(clipboard).toContain(NFT_TOKEN_ID)
 
 		// The copied URL resolves: navigate to it and verify the page loads
 		await page.goto(clipboard)
-		await expect(
-			page.getByTestId("credential-program-name"),
-		).toHaveText(PROGRAM_NAME)
+		await expect(page.getByTestId("credential-program-name")).toHaveText(
+			PROGRAM_NAME,
+		)
 	})
 })

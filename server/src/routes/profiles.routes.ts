@@ -74,4 +74,3 @@ profilesRouter.get("/profiles/:address", (req, res) => {
 profilesRouter.put("/profiles/me", authMiddleware, (req, res) => {
 	void updateProfile(req, res)
 })
-

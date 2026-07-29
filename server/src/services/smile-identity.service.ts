@@ -85,7 +85,10 @@ export async function submitDocumentVerification(
 	}
 
 	const data = (await response.json()) as SmileJobResponse
-	log.info({ jobId: data.job_id, walletAddress: params.walletAddress }, "Document verification submitted")
+	log.info(
+		{ jobId: data.job_id, walletAddress: params.walletAddress },
+		"Document verification submitted",
+	)
 	return data.job_id
 }
 
@@ -137,6 +140,9 @@ export async function submitBiometricVerification(
 	}
 
 	const data = (await response.json()) as SmileJobResponse
-	log.info({ jobId: data.job_id, walletAddress: params.walletAddress }, "Biometric verification submitted")
+	log.info(
+		{ jobId: data.job_id, walletAddress: params.walletAddress },
+		"Biometric verification submitted",
+	)
 	return data.job_id
 }

@@ -4,7 +4,11 @@ const log = logger.child({ module: "twilio-otp" })
 
 const TWILIO_API_BASE = "https://verify.twilio.com/v2/Services"
 
-function getConfig(): { accountSid: string; authToken: string; serviceSid: string } {
+function getConfig(): {
+	accountSid: string
+	authToken: string
+	serviceSid: string
+} {
 	const accountSid = process.env.TWILIO_ACCOUNT_SID
 	const authToken = process.env.TWILIO_AUTH_TOKEN
 	const serviceSid = process.env.TWILIO_VERIFY_SERVICE_SID
@@ -29,14 +33,17 @@ export async function sendOtp(phoneNumber: string): Promise<void> {
 	const { accountSid, authToken, serviceSid } = getConfig()
 
 	const body = new URLSearchParams({ To: phoneNumber, Channel: "sms" })
-	const response = await fetch(`${TWILIO_API_BASE}/${serviceSid}/Verifications`, {
-		method: "POST",
-		headers: {
-			Authorization: basicAuth(accountSid, authToken),
-			"Content-Type": "application/x-www-form-urlencoded",
+	const response = await fetch(
+		`${TWILIO_API_BASE}/${serviceSid}/Verifications`,
+		{
+			method: "POST",
+			headers: {
+				Authorization: basicAuth(accountSid, authToken),
+				"Content-Type": "application/x-www-form-urlencoded",
+			},
+			body: body.toString(),
 		},
-		body: body.toString(),
-	})
+	)
 
 	if (!response.ok) {
 		const text = await response.text()

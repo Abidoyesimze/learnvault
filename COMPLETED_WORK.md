@@ -2,7 +2,10 @@
 
 ## Project Overview
 
-**LearnVault** is a decentralized learn-and-earn platform built on the Stellar blockchain where education meets opportunity. Learners earn reputation tokens by completing skill tracks, while donors and sponsors fund a community treasury governed by DAO voting.
+**LearnVault** is a decentralized learn-and-earn platform built on the Stellar
+blockchain where education meets opportunity. Learners earn reputation tokens by
+completing skill tracks, while donors and sponsors fund a community treasury
+governed by DAO voting.
 
 ---
 
@@ -11,6 +14,7 @@
 ### 1. Core Protocol & Smart Contracts
 
 #### Learn Token (LRN) - Soulbound Reputation Token
+
 - **Status**: ✅ Complete with comprehensive test coverage
 - **Tests**: 36 tests passed (100% pass rate)
 - **Features Implemented**:
@@ -23,6 +27,7 @@
   - Transfer prevention across all methods (transfer, transfer_from, approve)
 
 #### Governance Token
+
 - **Status**: ✅ Implemented
 - **Features**:
   - Transferable SEP-41 fungible token
@@ -31,6 +36,7 @@
   - Used exclusively for DAO voting on scholarship proposals
 
 #### Course Milestone Contract
+
 - **Status**: ✅ Implemented
 - **Features**:
   - Tracks learner progress per course
@@ -39,6 +45,7 @@
   - Triggers LearnToken minting upon successful verification
 
 #### ScholarshipTreasury Contract
+
 - **Status**: ✅ Implemented
 - **Features**:
   - Tracks active disbursements
@@ -47,6 +54,7 @@
   - Generates real-time treasury statistics
 
 #### Additional Smart Contracts
+
 - **Scholar NFT**: On-chain certificate representation
 - **Milestone Escrow**: Secure disbursement for approved scholars
 - **Upgrade Timelock Vault**: Secure contract upgrade mechanism
@@ -57,6 +65,7 @@
 ### 2. Backend API Implementation
 
 #### Event Indexer System
+
 - **Status**: ✅ Complete
 - **Components**:
   - Database migration (`server/src/db/migrations/004_events.sql`)
@@ -64,7 +73,8 @@
   - Event configuration (`server/src/lib/event-config.ts`)
   - Event indexer service (`server/src/services/event-indexer.service.ts`)
   - Event poller worker (`server/src/workers/event-poller.ts`)
-  - Event controller with real DB queries (`server/src/controllers/events.controller.ts`)
+  - Event controller with real DB queries
+    (`server/src/controllers/events.controller.ts`)
 - **Features**:
   - Automatic event polling from blockchain
   - Configurable polling intervals
@@ -76,6 +86,7 @@
   - DATABASE_URL for connection
 
 #### Database Connection Pooling
+
 - **Status**: ✅ Complete
 - **Implementation**:
   - Configured pg.Pool with explicit settings:
@@ -87,6 +98,7 @@
   - Pool monitor service for real-time health tracking
 
 #### Health Check Endpoint
+
 - **Status**: ✅ Complete
 - **Endpoint**: `GET /api/health`
 - **Metrics Provided**:
@@ -98,6 +110,7 @@
   - Comprehensive response with timestamps
 
 #### Pool Monitoring & Alerting
+
 - **Status**: ✅ Complete
 - **Features**:
   - Real-time pool capacity monitoring
@@ -107,6 +120,7 @@
   - Alert logging to console with severity levels
 
 #### Metrics Dashboard Endpoints
+
 - **Status**: ✅ Complete
 - **Endpoints**:
   - `GET /api/metrics/pool` - Detailed pool metrics for monitoring
@@ -119,6 +133,7 @@
   - Debug information (client count, waiting count, etc.)
 
 #### Treasury API
+
 - **Status**: ✅ Complete
 - **Endpoints**:
   - `GET /api/treasury/stats` - Aggregated treasury statistics
@@ -132,6 +147,7 @@
   - Configurable via SCHOLARSHIP_TREASURY_CONTRACT_ID
 
 #### Learner Profile Endpoint
+
 - **Status**: ✅ Complete
 - **Endpoint**: `GET /api/me`
 - **Features**:
@@ -146,6 +162,7 @@
 ### 3. Frontend Implementation
 
 #### Admin Panel
+
 - **Status**: ✅ Complete
 - **Route**: `/admin`
 - **Features**:
@@ -157,6 +174,7 @@
 - **Issue Resolution**: Fixes #74
 
 #### Treasury Dashboard
+
 - **Status**: ✅ Complete
 - **Route**: `/treasury`
 - **Features**:
@@ -170,6 +188,7 @@
 - **Issue Resolution**: Fixes #50
 
 #### ScholarNFT Credential Viewer
+
 - **Status**: ✅ Complete
 - **Route**: `/credentials/1` (and dynamic ID routing)
 - **Features**:
@@ -181,6 +200,7 @@
 - **Issue Resolution**: Fixes #32
 
 #### Quiz & Assessment Engine
+
 - **Status**: ✅ Complete
 - **Component**: `QuizEngine`
 - **Features**:
@@ -192,6 +212,7 @@
 - **Issue Resolution**: Fixes #26
 
 #### Dashboard Data Wiring
+
 - **Status**: ✅ Complete
 - **Updates**:
   - Removed all hardcoded stats and data
@@ -210,6 +231,7 @@
 - **Acceptance Criteria**: All 5 criteria met ✅
 
 #### Community Events Calendar
+
 - **Status**: ✅ Complete
 - **Route**: `/community`
 - **Features**:
@@ -225,6 +247,7 @@
 - **Issue Resolution**: Fixes #750
 
 #### Multi-Language Support (i18n)
+
 - **Status**: ✅ Complete
 - **Technology**: react-i18next
 - **Implementation**:
@@ -239,6 +262,7 @@
 ### 4. Security & DevOps
 
 #### Helmet Middleware with CSP
+
 - **Status**: ✅ Complete
 - **Implementation**:
   - Helmet.js security middleware
@@ -249,6 +273,7 @@
 - **Issue Resolution**: Fixes #720
 
 #### GitLeaks Pre-commit Integration
+
 - **Status**: ✅ Complete
 - **Implementation**:
   - GitLeaks integrated into Husky pre-commit hooks
@@ -258,6 +283,7 @@
 - **Issue Resolution**: Fixes #709
 
 #### Database Migration Safety
+
 - **Status**: ✅ Complete
 - **Implementation**:
   - Dry-run migration checks in GitHub Actions CI
@@ -271,6 +297,7 @@
 ### 5. Testing & Quality Assurance
 
 #### Smart Contract Test Coverage
+
 - **Status**: ✅ Complete
 - **LearnToken Tests**: 36 tests passed
   - Initialization tests (4 tests)
@@ -284,6 +311,7 @@
   - Event emission (2 tests)
 
 #### End-to-End Testing (Playwright)
+
 - **Status**: ✅ Complete
 - **Test Suites**:
   - `a11y.spec.ts` - Accessibility testing
@@ -294,11 +322,13 @@
   - `wallet-auth.spec.ts` - Wallet authentication
 
 #### Performance Testing
+
 - **Status**: ✅ Infrastructure setup complete
 - **Location**: `loadtests/k6/`
 - **Tool**: k6 for load testing
 
 #### CI/CD Pipelines
+
 - **Status**: ✅ Complete
 - **Workflows**:
   - Contracts CI: Smart contract compilation and testing
@@ -313,6 +343,7 @@
 ### 6. Documentation
 
 #### Architecture Documentation
+
 - **Status**: ✅ Complete
 - **Files**:
   - `docs/architecture.mmd` - System architecture diagram
@@ -320,6 +351,7 @@
   - `docs/whitepaper.md` - Full protocol whitepaper
 
 #### API Documentation
+
 - **Status**: ✅ Complete
 - **Files**:
   - `docs/openapi.yaml` - OpenAPI specification
@@ -327,6 +359,7 @@
   - `docs/credentials-api-example.md` - API usage examples
 
 #### Smart Contract Documentation
+
 - **Status**: ✅ Complete
 - **Files**:
   - `docs/contracts.md` - Contract system overview
@@ -334,6 +367,7 @@
   - `docs/token-economics.md` - Token economics model
 
 #### Deployment & Infrastructure
+
 - **Status**: ✅ Complete
 - **Documentation**:
   - `docs/deployment/` - Deployment guides
@@ -341,6 +375,7 @@
   - `SECURITY_REVIEW.md` - Security audit findings
 
 #### Security Documentation
+
 - **Status**: ✅ Complete
 - **Files**:
   - `docs/SECURITY_REVIEW.md` - Comprehensive security review
@@ -349,6 +384,7 @@
   - `SENTRY_ALERT_RULES.md` - Alert configuration
 
 #### Configuration Documentation
+
 - **Status**: ✅ Complete
 - **Files**:
   - `docs/database-pool-config.md` - Database pooling configuration
@@ -358,6 +394,7 @@
   - `docs/request-tracing.md` - Distributed tracing
 
 #### Additional Documentation
+
 - **Status**: ✅ Complete
 - **Files**:
   - `docs/glossary.md` - Terminology definitions
@@ -371,6 +408,7 @@
 ### 7. Configuration & Setup
 
 #### Environment Configuration
+
 - **Status**: ✅ Complete
 - **Files**:
   - `environments.toml` - Multi-environment settings
@@ -382,22 +420,27 @@
     - Server port configuration
 
 #### Build Configuration
+
 - **Status**: ✅ Complete
 - **Tools**:
   - Vite configuration (`vite.config.ts`)
   - Vitest configuration (`vitest.config.ts`)
-  - TypeScript configuration (`tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`)
+  - TypeScript configuration (`tsconfig.json`, `tsconfig.app.json`,
+    `tsconfig.node.json`)
   - ESLint configuration (`eslint.config.js`)
   - Playwright configuration (`playwright.config.ts`)
 
 #### Stellar & Web3 Configuration
+
 - **Status**: ✅ Complete
 - **Contract Deployment**:
   - Testnet deployment scripts (`scripts/deploy-testnet.sh`)
-  - Contract artifacts for: learn_token, governance_token, course_milestone, scholar_nft, milestone_escrow, scholarship_treasury, upgrade_timelock_vault
+  - Contract artifacts for: learn_token, governance_token, course_milestone,
+    scholar_nft, milestone_escrow, scholarship_treasury, upgrade_timelock_vault
   - Fungible token allowlist for managed distributions
 
 #### Package Management
+
 - **Status**: ✅ Complete
 - **Files**:
   - `package.json` - Frontend dependencies
@@ -409,6 +452,7 @@
 ### 8. Infrastructure & Deployment
 
 #### Docker Setup
+
 - **Status**: ✅ Complete
 - **Files**:
   - `Dockerfile` - Server containerization
@@ -416,16 +460,19 @@
   - `docker-compose.test.yml` - Test environment setup
 
 #### Vercel Deployment
+
 - **Status**: ✅ Complete
 - **Configuration**: `vercel.json` - Deployment settings
 
 #### Performance Monitoring
+
 - **Status**: ✅ Complete
 - **Tools**:
   - Lighthouse integration (`lighthouserc.json`)
   - Performance budgets configured
 
 #### Code Quality
+
 - **Status**: ✅ Complete
 - **Tools**:
   - Code coverage tracking (`codecov.yml`)
@@ -437,6 +484,7 @@
 ### 9. Community & Contributing
 
 #### Community Standards
+
 - **Status**: ✅ Complete
 - **Files**:
   - `CODE_OF_CONDUCT.md` - Community guidelines
@@ -445,6 +493,7 @@
   - `LICENSE` - Apache 2.0 licensing
 
 #### Project Management
+
 - **Status**: ✅ Complete
 - **Documentation**:
   - `TODO.md` - Event Indexer implementation checklist (12/12 ✅ COMPLETE)
@@ -459,6 +508,7 @@
 ## 🎯 Key Achievements
 
 ### Protocol & Blockchain
+
 - ✅ Complete smart contract system for learn-to-earn mechanics
 - ✅ Soulbound reputation tokens (LearnToken - LRN)
 - ✅ Governance token system for DAO voting
@@ -466,6 +516,7 @@
 - ✅ NFT credential system for verified achievements
 
 ### Backend Infrastructure
+
 - ✅ Event indexer for blockchain data synchronization
 - ✅ Database connection pooling with monitoring
 - ✅ Real-time health checks and alerting system
@@ -474,6 +525,7 @@
 - ✅ Learner profile authentication endpoint
 
 ### Frontend User Experience
+
 - ✅ Admin panel for course and treasury management
 - ✅ Treasury dashboard with real-time statistics
 - ✅ Credential verification and gallery display
@@ -483,6 +535,7 @@
 - ✅ Multi-language support (i18n)
 
 ### Security & DevOps
+
 - ✅ Helmet middleware with CSP for web security
 - ✅ GitLeaks integration for credential protection
 - ✅ Database migration safety checks
@@ -490,6 +543,7 @@
 - ✅ Error monitoring with Sentry
 
 ### Testing & Quality
+
 - ✅ 36 comprehensive smart contract tests (100% pass rate)
 - ✅ End-to-end testing with Playwright
 - ✅ Performance testing infrastructure (k6)
@@ -497,6 +551,7 @@
 - ✅ Code coverage tracking and reporting
 
 ### Documentation
+
 - ✅ Complete API documentation (OpenAPI)
 - ✅ Architecture and design documentation
 - ✅ Deployment and configuration guides
@@ -507,22 +562,23 @@
 
 ## 📊 Completion Status Summary
 
-| Category | Status | Details |
-|----------|--------|---------|
-| Smart Contracts | ✅ Complete | 6 contracts deployed, 36 tests passing |
-| Backend APIs | ✅ Complete | 8+ endpoints, pooling, monitoring, health checks |
-| Frontend Pages | ✅ Complete | 6 main pages, real data integration, i18n |
-| Security | ✅ Complete | CSP, GitLeaks, migration safety, security review |
-| Testing | ✅ Complete | E2E tests, smart contract tests, CI/CD |
-| Documentation | ✅ Complete | API, architecture, deployment, security docs |
-| Deployment | ✅ Complete | Docker, Vercel, testnet contracts |
-| Performance | ✅ Complete | Monitoring, pooling, optimizations |
+| Category        | Status      | Details                                          |
+| --------------- | ----------- | ------------------------------------------------ |
+| Smart Contracts | ✅ Complete | 6 contracts deployed, 36 tests passing           |
+| Backend APIs    | ✅ Complete | 8+ endpoints, pooling, monitoring, health checks |
+| Frontend Pages  | ✅ Complete | 6 main pages, real data integration, i18n        |
+| Security        | ✅ Complete | CSP, GitLeaks, migration safety, security review |
+| Testing         | ✅ Complete | E2E tests, smart contract tests, CI/CD           |
+| Documentation   | ✅ Complete | API, architecture, deployment, security docs     |
+| Deployment      | ✅ Complete | Docker, Vercel, testnet contracts                |
+| Performance     | ✅ Complete | Monitoring, pooling, optimizations               |
 
 ---
 
 ## 🚀 Ready for Production
 
 The codebase is feature-complete with:
+
 - All critical paths implemented and tested
 - Security measures in place
 - Monitoring and alerting infrastructure
@@ -530,4 +586,5 @@ The codebase is feature-complete with:
 - Community standards and contributing guidelines
 - Performance optimization and scalability considerations
 
-**Next Steps**: Mainnet deployment, ongoing monitoring, and continuous improvement based on user feedback.
+**Next Steps**: Mainnet deployment, ongoing monitoring, and continuous
+improvement based on user feedback.

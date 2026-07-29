@@ -23,7 +23,12 @@ import {
 // Types
 // ---------------------------------------------------------------------------
 
-type ProposalStatus = "pending" | "approved" | "rejected" | "passed" | "executed"
+type ProposalStatus =
+	| "pending"
+	| "approved"
+	| "rejected"
+	| "passed"
+	| "executed"
 
 type MockProposal = {
 	id: number
@@ -169,7 +174,11 @@ async function installGovernanceMocks(page: Page) {
 		}
 
 		// --- Finalize / advance past deadline ---
-		if (pathname.startsWith("/api/proposals/") && pathname.endsWith("/finalize") && method === "POST") {
+		if (
+			pathname.startsWith("/api/proposals/") &&
+			pathname.endsWith("/finalize") &&
+			method === "POST"
+		) {
 			const id = Number.parseInt(pathname.split("/")[3] ?? "", 10)
 			const proposal = proposals.find((p) => p.id === id)
 			if (!proposal) return fulfillJson(route, { error: "Not found" }, 404)
@@ -184,7 +193,11 @@ async function installGovernanceMocks(page: Page) {
 		}
 
 		// --- Execute proposal ---
-		if (pathname.startsWith("/api/proposals/") && pathname.endsWith("/execute") && method === "POST") {
+		if (
+			pathname.startsWith("/api/proposals/") &&
+			pathname.endsWith("/execute") &&
+			method === "POST"
+		) {
 			const id = Number.parseInt(pathname.split("/")[3] ?? "", 10)
 			const proposal = proposals.find((p) => p.id === id)
 			if (!proposal) return fulfillJson(route, { error: "Not found" }, 404)
@@ -237,7 +250,9 @@ test.describe("Governance voting flow", () => {
 		await mockHorizonBalances(page)
 	})
 
-	test("1. Wallet connects and governance token balance is shown", async ({ page }) => {
+	test("1. Wallet connects and governance token balance is shown", async ({
+		page,
+	}) => {
 		await installGovernanceMocks(page)
 		await page.goto("/dao")
 
@@ -251,18 +266,26 @@ test.describe("Governance voting flow", () => {
 		await installGovernanceMocks(page)
 		await page.goto("/dao/propose")
 
-		await expect(page.getByRole("heading", { name: /Create Proposal/i })).toBeVisible()
+		await expect(
+			page.getByRole("heading", { name: /Create Proposal/i }),
+		).toBeVisible()
 
 		await page.locator('input[name="title"]').fill("Expand Scholar Cohort")
-		await page.locator('textarea[name="description"]').fill("Fund five new scholars for Q3 2026")
+		await page
+			.locator('textarea[name="description"]')
+			.fill("Fund five new scholars for Q3 2026")
 		await page.locator('input[name="fundingAmount"]').fill("1000")
 		await page.getByTestId("submit-proposal").click()
 
 		await expect(page).toHaveURL(/\/dao\/proposals\?proposal=\d+/)
-		await expect(page.getByTestId("proposal-detail-title")).toHaveText("Expand Scholar Cohort")
+		await expect(page.getByTestId("proposal-detail-title")).toHaveText(
+			"Expand Scholar Cohort",
+		)
 	})
 
-	test("3. Token holder can cast a yes vote on an active proposal", async ({ page }) => {
+	test("3. Token holder can cast a yes vote on an active proposal", async ({
+		page,
+	}) => {
 		await installGovernanceMocks(page)
 		await page.goto("/dao/proposals?proposal=1")
 
@@ -282,7 +305,9 @@ test.describe("Governance voting flow", () => {
 		await expect(page.getByTestId("vote-no")).toBeDisabled()
 	})
 
-	test("4–5. After voting period ends proposal state changes to PASSED", async ({ page }) => {
+	test("4–5. After voting period ends proposal state changes to PASSED", async ({
+		page,
+	}) => {
 		const mocks = await installGovernanceMocks(page)
 
 		// Seed a proposal and cast a winning vote first
@@ -302,7 +327,9 @@ test.describe("Governance voting flow", () => {
 		await expect(page.getByTestId("vote-yes")).not.toBeVisible()
 	})
 
-	test("6–7. Executing a passed proposal updates treasury balance", async ({ page }) => {
+	test("6–7. Executing a passed proposal updates treasury balance", async ({
+		page,
+	}) => {
 		const mocks = await installGovernanceMocks(page)
 
 		// Set up: vote and advance to passed state

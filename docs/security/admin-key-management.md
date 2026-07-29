@@ -17,25 +17,24 @@ Recommended baseline:
 
 ## Contract Authority Map
 
-| Contract | Privileged role | Privileged functions |
-| --- | --- | --- |
-| `LearnToken` | Stored `ADMIN` | `mint`, `set_admin`, `upgrade` |
-| `GovernanceToken` | Stored `ADMIN` | `mint`, `admin_burn_from`, `set_admin`, `pause`, `unpause`, `upgrade` |
-| `CourseMilestone` | Stored `ADMIN` | `add_course`, `remove_course`, `set_milestone_reward`, `verify_milestone`, `batch_verify_milestones`, `reject_milestone`, `pause`, `unpause`, `upgrade` |
-| `ScholarshipTreasury` | Stored `ADMIN`; configured governance contract | Admin controls configuration, pause, cancellation, and upgrade. Governance authorizes public `disburse`. |
-| `MilestoneEscrow` | Stored `ADMIN`; configured treasury | Admin releases/reclaims tranches and upgrades. Treasury creates escrow records. |
-| `ScholarNFT` | Stored `ADMIN` | `mint`, `revoke`, `transfer_admin`, `upgrade` |
-| `UpgradeTimelockVault` | Stored `ADMIN` | `set_timelock_duration`, `queue_upgrade`, `execute_upgrade`, `cancel_upgrade` |
-| `FungibleAllowlist` | Stored `Admin` | `add_to_allowlist`, `remove_from_allowlist`, `set_admin` |
+| Contract               | Privileged role                                | Privileged functions                                                                                                                                    |
+| ---------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `LearnToken`           | Stored `ADMIN`                                 | `mint`, `set_admin`, `upgrade`                                                                                                                          |
+| `GovernanceToken`      | Stored `ADMIN`                                 | `mint`, `admin_burn_from`, `set_admin`, `pause`, `unpause`, `upgrade`                                                                                   |
+| `CourseMilestone`      | Stored `ADMIN`                                 | `add_course`, `remove_course`, `set_milestone_reward`, `verify_milestone`, `batch_verify_milestones`, `reject_milestone`, `pause`, `unpause`, `upgrade` |
+| `ScholarshipTreasury`  | Stored `ADMIN`; configured governance contract | Admin controls configuration, pause, cancellation, and upgrade. Governance authorizes public `disburse`.                                                |
+| `MilestoneEscrow`      | Stored `ADMIN`; configured treasury            | Admin releases/reclaims tranches and upgrades. Treasury creates escrow records.                                                                         |
+| `ScholarNFT`           | Stored `ADMIN`                                 | `mint`, `revoke`, `transfer_admin`, `upgrade`                                                                                                           |
+| `UpgradeTimelockVault` | Stored `ADMIN`                                 | `set_timelock_duration`, `queue_upgrade`, `execute_upgrade`, `cancel_upgrade`                                                                           |
+| `FungibleAllowlist`    | Stored `Admin`                                 | `add_to_allowlist`, `remove_from_allowlist`, `set_admin`                                                                                                |
 
 ## Upgrade Model
 
-The six core upgradeable contracts call Soroban
-`update_current_contract_wasm` through `learnvault_shared::upgrade::apply`.
-The stored admin must authorize each upgrade. The emitted
-`ContractUpgraded` event records the previous managed hash, the new hash, and
-the admin address; Soroban native executable update events remain the canonical
-runtime source for exact executable changes.
+The six core upgradeable contracts call Soroban `update_current_contract_wasm`
+through `learnvault_shared::upgrade::apply`. The stored admin must authorize
+each upgrade. The emitted `ContractUpgraded` event records the previous managed
+hash, the new hash, and the admin address; Soroban native executable update
+events remain the canonical runtime source for exact executable changes.
 
 The `UpgradeTimelockVault` stores queued upgrade hashes and enforces a timelock
 before returning the hash for execution. It does not update other contracts by

@@ -1,7 +1,8 @@
-import { Pool } from "pg"
+import { Pool, type PoolConfig } from "pg"
 
 import { logger } from "../lib/logger"
 import { poolMonitor } from "../services/pool-monitor.service"
+import { resolvePoolEnvConfig } from "./pool-config"
 
 const log = logger.child({ module: "db" })
 
@@ -9,35 +10,12 @@ const log = logger.child({ module: "db" })
 const getPoolConfig = () => {
 	const isProduction = process.env.NODE_ENV === "production"
 	const isDevelopment = process.env.NODE_ENV === "development"
-
-	// Recommended pool sizes per environment
-	const poolSizes = {
-		production: {
-			max: 20,
-			min: 4,
-			idleTimeoutMillis: 30000,
-			connectionTimeoutMillis: 5000,
-		},
-		staging: {
-			max: 15,
-			min: 2,
-			idleTimeoutMillis: 30000,
-			connectionTimeoutMillis: 5000,
-		},
-		development: {
-			max: 5,
-			min: 1,
-			idleTimeoutMillis: 30000,
-			connectionTimeoutMillis: 5000,
-		},
-	}
-
 	const env = isProduction
 		? "production"
 		: isDevelopment
 			? "development"
 			: "staging"
-	const config = poolSizes[env as keyof typeof poolSizes]
+	const config = resolvePoolEnvConfig()
 
 	return {
 		connectionString: process.env.DATABASE_URL,
@@ -67,22 +45,18 @@ let activePool: Pool | MockPool
 try {
 	const poolConfig = getPoolConfig()
 	activePool = new Pool(poolConfig)
-	log.info(
-		{
-			max: poolConfig.max,
-			min: poolConfig.min,
-			idleTimeoutMillis: poolConfig.idleTimeoutMillis,
-			connectionTimeoutMillis: poolConfig.connectionTimeoutMillis,
-		},
-		"Pool configured",
+	console.log(
+		`[db] Pool configured: max=${poolConfig.max}, min=${poolConfig.min}, idleTimeout=${poolConfig.idleTimeoutMillis}ms, connectionTimeout=${poolConfig.connectionTimeoutMillis}ms`,
 	)
 
-	// Initialize pool monitoring
 	if (activePool instanceof Pool) {
+		activePool.on("error", (err) => {
+			log.error({ err }, "Unexpected error on idle database pool client")
+		})
 		poolMonitor.initializeMonitor(activePool)
 	}
-} catch (err) {
-	log.warn({ err }, "Failed to create postgres pool, using mock")
+} catch {
+	console.warn("[db] Failed to create postgres pool, using mock")
 	activePool = new MockPool()
 }
 
@@ -91,13 +65,24 @@ export const pool = activePool
 /**
  * Verifies the database connection on startup.
  * Schema is managed exclusively via migrations (`npm run migrate`).
- * No DDL is executed here.
+ * Enrollment table DDL runs on startup.
  */
 export const initDb = async () => {
 	try {
 		if (activePool instanceof Pool) {
 			const client = await activePool.connect()
 			await client.query("SELECT 1")
+
+			await client.query(
+				`CREATE TABLE IF NOT EXISTS enrollments (
+				id SERIAL PRIMARY KEY,
+				learner_address TEXT NOT NULL,
+				course_id TEXT NOT NULL REFERENCES courses(id),
+				tx_hash TEXT,
+				enrolled_at TIMESTAMPTZ DEFAULT NOW(),
+				UNIQUE(learner_address, course_id)
+				);`,
+			)
 			client.release()
 			log.info("Postgres connection verified")
 			await logPgStatStatementsSnapshot()

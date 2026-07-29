@@ -2,12 +2,14 @@
 
 ## Overview
 
-This file summarizes what has been completed in the LearnVault repository so far.
-It focuses on the implemented protocol, backend services, frontend experience, and supporting documentation.
+This file summarizes what has been completed in the LearnVault repository so
+far. It focuses on the implemented protocol, backend services, frontend
+experience, and supporting documentation.
 
 ## What has been built
 
 ### Core protocol and smart contracts
+
 - **LearnToken (LRN)**
   - Soulbound SEP-41 fungible token
   - Non-transferable reputation token for learners
@@ -39,6 +41,7 @@ It focuses on the implemented protocol, backend services, frontend experience, a
   - Fungible allowlist for controlled distributions
 
 ### Backend implementation
+
 - **Event indexer system**
   - Database migration and schema for indexed blockchain events
   - Event poller service and worker implementation
@@ -59,6 +62,7 @@ It focuses on the implemented protocol, backend services, frontend experience, a
   - Authenticated profile retrieval
 
 ### Frontend implementation
+
 - **Admin panel**
   - Course and milestone management
   - Treasury oversight
@@ -83,6 +87,7 @@ It focuses on the implemented protocol, backend services, frontend experience, a
   - Locale-aware formatting and language switching
 
 ### Security and process
+
 - **Helmet security middleware**
   - Content Security Policy and allowlist enforcement
 - **GitLeaks pre-commit integration**
@@ -92,12 +97,16 @@ It focuses on the implemented protocol, backend services, frontend experience, a
   - Root-level `README.md` and supporting docs already present
 
 ## Existing documentation
+
 - `README.md` — main project documentation and architecture overview
 - `COMPLETED_WORK.md` — detailed feature and implementation summary
 - `TODO.md` — pending work and implementation notes
 - `docs/` — architecture, API, security, and contract references
 
 ## Notes
-- The project is actively documented and includes both formal design material and implementation tracking.
-- This summary is intended as a snapshot of completed work and high-level progress.
+
+- The project is actively documented and includes both formal design material
+  and implementation tracking.
+- This summary is intended as a snapshot of completed work and high-level
+  progress.
 - For full technical details, see `README.md` and `COMPLETED_WORK.md`.

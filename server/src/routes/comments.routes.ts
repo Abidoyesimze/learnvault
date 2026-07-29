@@ -46,8 +46,14 @@ export function createCommentsRouter(jwtService: JwtService): Router {
 		const pageParam = parseInt(req.query.page as string) || 1
 		const limit = Math.min(parseInt(req.query.limit as string) || 50, 100)
 		const offsetParam = parseInt(req.query.offset as string)
-		const offset = !isNaN(offsetParam) && offsetParam >= 0 ? offsetParam : (pageParam - 1) * limit
-		const page = !isNaN(offsetParam) && offsetParam >= 0 ? Math.floor(offset / limit) + 1 : pageParam
+		const offset =
+			!isNaN(offsetParam) && offsetParam >= 0
+				? offsetParam
+				: (pageParam - 1) * limit
+		const page =
+			!isNaN(offsetParam) && offsetParam >= 0
+				? Math.floor(offset / limit) + 1
+				: pageParam
 
 		try {
 			const countResult = await pool.query(
@@ -182,6 +188,33 @@ export function createCommentsRouter(jwtService: JwtService): Router {
 	 *     summary: Edit own comment
 	 *     tags: [Comments]
 	 *     security: [{ bearerAuth: [] }]
+	 *     parameters:
+	 *       - in: path
+	 *         name: id
+	 *         required: true
+	 *         schema:
+	 *           type: integer
+	 *     requestBody:
+	 *       required: true
+	 *       content:
+	 *         application/json:
+	 *           schema:
+	 *             type: object
+	 *             required: [content]
+	 *             properties:
+	 *               content:
+	 *                 type: string
+	 *     responses:
+	 *       200:
+	 *         description: Comment updated
+	 *       400:
+	 *         $ref: '#/components/responses/BadRequestError'
+	 *       401:
+	 *         $ref: '#/components/responses/UnauthorizedError'
+	 *       404:
+	 *         $ref: '#/components/responses/NotFoundError'
+	 *       500:
+	 *         $ref: '#/components/responses/InternalServerError'
 	 */
 	router.patch(
 		"/comments/:id",

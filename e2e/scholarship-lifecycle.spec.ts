@@ -2,10 +2,6 @@ import { expect, test, type Page } from "@playwright/test"
 
 import { mockHorizonBalances } from "./fixtures/mock-horizon"
 import {
-	installMockFreighter,
-	E2E_WALLET_ADDRESS,
-} from "./fixtures/mock-wallet"
-import {
 	installScholarshipApiMocks,
 	switchWallet,
 	SCHOLAR_WALLET_ADDRESS,
@@ -14,6 +10,10 @@ import {
 	expectToast,
 	type ScholarshipProposalState,
 } from "./fixtures/mock-scholarship"
+import {
+	installMockFreighter,
+	E2E_WALLET_ADDRESS,
+} from "./fixtures/mock-wallet"
 
 /**
  * End-to-End Test: Complete Scholarship Lifecycle
@@ -158,14 +158,18 @@ async function expectAdminWalletConnected(page: Page) {
 async function submitScholarshipProposal(page: Page): Promise<number> {
 	// Navigate to scholarship application page
 	await page.goto("/scholarships/apply")
-	await expect(page.getByRole("heading", { name: /Scholarship application/i })).toBeVisible()
+	await expect(
+		page.getByRole("heading", { name: /Scholarship application/i }),
+	).toBeVisible()
 
 	// Step 1: Eligibility check - should pass with 150 LRN
 	await expect(page.getByText(/Eligible to continue/i)).toBeVisible()
 	await page.getByRole("button", { name: "Continue" }).click()
 
 	// Step 2: Program details
-	await page.locator('input[id="scholarship-program-name"]').fill("Soroban Developer Bootcamp")
+	await page
+		.locator('input[id="scholarship-program-name"]')
+		.fill("Soroban Developer Bootcamp")
 	await page
 		.locator('input[id="scholarship-program-url"]')
 		.fill("https://example.com/bootcamp")
@@ -205,7 +209,9 @@ async function submitScholarshipProposal(page: Page): Promise<number> {
 	await page.getByRole("button", { name: /Sign & submit/i }).click()
 
 	// Wait for confirmation page
-	await expect(page.getByRole("heading", { name: /Confirmation/i })).toBeVisible({
+	await expect(
+		page.getByRole("heading", { name: /Confirmation/i }),
+	).toBeVisible({
 		timeout: 10_000,
 	})
 
@@ -234,20 +240,28 @@ async function fundProposal(page: Page, proposalId: number) {
 	await page.goto("/donor")
 
 	// Wait for donor dashboard to load
-	await expect(page.getByRole("heading", { name: /Donor Dashboard/i })).toBeVisible()
+	await expect(
+		page.getByRole("heading", { name: /Donor Dashboard/i }),
+	).toBeVisible()
 
 	// Click on "Become a Donor" or deposit button if no activity
-	const depositButton = page.getByRole("button", { name: /Become a Donor|Deposit/i })
+	const depositButton = page.getByRole("button", {
+		name: /Become a Donor|Deposit/i,
+	})
 	if (await depositButton.isVisible().catch(() => false)) {
 		await depositButton.click()
 	}
 
 	// Navigate to treasury page to fund specific proposal
 	await page.goto("/treasury")
-	await expect(page.getByRole("heading", { name: /Treasury|Scholarship/i })).toBeVisible()
+	await expect(
+		page.getByRole("heading", { name: /Treasury|Scholarship/i }),
+	).toBeVisible()
 
 	// Find and click the fund button for the specific proposal
-	const fundButton = page.locator(`[data-proposal-id="${proposalId}"] button:has-text("Fund")`).first()
+	const fundButton = page
+		.locator(`[data-proposal-id="${proposalId}"] button:has-text("Fund")`)
+		.first()
 	if (await fundButton.isVisible().catch(() => false)) {
 		await fundButton.click()
 
@@ -267,11 +281,17 @@ async function fundProposal(page: Page, proposalId: number) {
 /**
  * Navigates to the DAO proposals page and casts a vote.
  */
-async function voteOnProposal(page: Page, proposalId: number, support: boolean) {
+async function voteOnProposal(
+	page: Page,
+	proposalId: number,
+	support: boolean,
+) {
 	await page.goto(`/dao/proposals?proposal=${proposalId}`)
 
 	// Wait for proposal to load
-	await expect(page.getByTestId("proposal-detail-title")).toBeVisible({ timeout: 10_000 })
+	await expect(page.getByTestId("proposal-detail-title")).toBeVisible({
+		timeout: 10_000,
+	})
 
 	// Click vote button (Yes or No)
 	const voteButton = support
@@ -280,7 +300,9 @@ async function voteOnProposal(page: Page, proposalId: number, support: boolean) 
 	await voteButton.click()
 
 	// Wait for vote confirmation
-	await expect(page.getByText(/You voted (Yes|No)/i)).toBeVisible({ timeout: 10_000 })
+	await expect(page.getByText(/You voted (Yes|No)/i)).toBeVisible({
+		timeout: 10_000,
+	})
 
 	// Verify vote count updated
 	await expect(page.getByTestId("vote-yes-count")).toContainText(
@@ -309,9 +331,9 @@ async function approveProposalAsAdmin(page: Page, proposalId: number) {
 	}
 
 	// Find the proposal and approve it
-	const approveButton = page.locator(
-		`[data-proposal-id="${proposalId}"] button:has-text("Approve")`,
-	).first()
+	const approveButton = page
+		.locator(`[data-proposal-id="${proposalId}"] button:has-text("Approve")`)
+		.first()
 
 	if (await approveButton.isVisible().catch(() => false)) {
 		await approveButton.click()
@@ -338,7 +360,9 @@ async function submitMilestone(page: Page) {
 	await page.goto("/scholar/milestones")
 
 	// Wait for milestone page to load
-	await expect(page.getByRole("heading", { name: /Milestone completion/i })).toBeVisible()
+	await expect(
+		page.getByRole("heading", { name: /Milestone completion/i }),
+	).toBeVisible()
 
 	// Fill out the milestone form
 	await page
@@ -351,13 +375,17 @@ async function submitMilestone(page: Page) {
 		.locator('input[name="evidenceGithub"], input[id="evidenceGithub"]')
 		.fill("https://github.com/scholar/soroban-project")
 	await page
-		.locator('textarea[name="evidenceDescription"], textarea[id="evidenceDescription"]')
+		.locator(
+			'textarea[name="evidenceDescription"], textarea[id="evidenceDescription"]',
+		)
 		.fill(
 			"Completed the Soroban fundamentals course. Deployed a working smart contract that implements token transfers and balance tracking.",
 		)
 
 	// Accept terms
-	const termsCheckbox = page.locator('input[type="checkbox"][name="acceptedTerms"]')
+	const termsCheckbox = page.locator(
+		'input[type="checkbox"][name="acceptedTerms"]',
+	)
 	if (await termsCheckbox.isVisible().catch(() => false)) {
 		await termsCheckbox.check()
 	}
@@ -366,7 +394,9 @@ async function submitMilestone(page: Page) {
 	await page.getByRole("button", { name: /Submit Milestone/i }).click()
 
 	// Wait for success confirmation
-	await expect(page.getByText(/Report ID|submitted/i)).toBeVisible({ timeout: 10_000 })
+	await expect(page.getByText(/Report ID|submitted/i)).toBeVisible({
+		timeout: 10_000,
+	})
 }
 
 // =============================================================================
@@ -434,11 +464,13 @@ async function verifyTrancheReceived(page: Page) {
 
 	// Alternatively, check the history page for the tranche receipt
 	await page.goto("/history")
-	await expect(page.getByRole("heading", { name: /History|Activity/i })).toBeVisible()
+	await expect(
+		page.getByRole("heading", { name: /History|Activity/i }),
+	).toBeVisible()
 
 	// Look for a transaction indicating funds received
 	const receivedTransaction = page.locator(
-		'text=/Received|text=/Tranche|text=/funds released|text=/Milestone Approved/i',
+		"text=/Received|text=/Tranche|text=/funds released|text=/Milestone Approved/i",
 	)
 	await expect(receivedTransaction).toBeVisible({ timeout: 10_000 })
 }

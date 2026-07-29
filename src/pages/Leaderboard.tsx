@@ -75,7 +75,10 @@ const Leaderboard: React.FC = () => {
 	}
 
 	return (
-		<div aria-busy={isLoading} className="p-6 md:p-12 max-w-6xl mx-auto text-white animate-in fade-in slide-in-from-bottom-8 duration-1000">
+		<div
+			aria-busy={isLoading}
+			className="p-6 md:p-12 max-w-6xl mx-auto text-white animate-in fade-in slide-in-from-bottom-8 duration-1000"
+		>
 			<header className="mb-12 text-center">
 				<h1 className="text-4xl sm:text-5xl md:text-6xl font-black mb-4 tracking-tighter text-gradient">
 					{t("pages.leaderboard.title")}

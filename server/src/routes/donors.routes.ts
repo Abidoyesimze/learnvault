@@ -1,8 +1,6 @@
 import { Router } from "express"
 
-import {
-	getDonorImpact,
-} from "../controllers/donors.controller"
+import { getDonorImpact } from "../controllers/donors.controller"
 
 export const donorsRouter = Router()
 

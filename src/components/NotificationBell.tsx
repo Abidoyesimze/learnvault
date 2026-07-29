@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { EmptyState as StateEmpty } from "./states/emptyState"
 import {
 	type AppNotification,
 	useNotifications,
 } from "../hooks/useNotifications"
+import { EmptyState as StateEmpty } from "./states/emptyState"
 
 interface NotificationBellProps {
 	/** JWT token for the current user — omit if unauthenticated */
@@ -56,7 +56,7 @@ export function NotificationBell({ token }: NotificationBellProps) {
 				"button:not([disabled]), a[href], input:not([disabled]), [tabindex]:not([tabindex='-1'])"
 			const focusable = Array.from(
 				panelRef.current?.querySelectorAll<HTMLElement>(focusableSelectors) ??
-				[],
+					[],
 			)
 			if (focusable.length === 0) return
 			const first = focusable[0]
@@ -175,8 +175,9 @@ export function NotificationBell({ token }: NotificationBellProps) {
 									key={notification.id}
 									type="button"
 									onClick={() => void handleNotificationClick(notification)}
-									className={`w-full text-left px-5 py-4 border-b border-white/5 hover:bg-white/5 transition-colors ${!notification.is_read ? "bg-brand-cyan/5" : ""
-										}`}
+									className={`w-full text-left px-5 py-4 border-b border-white/5 hover:bg-white/5 transition-colors ${
+										!notification.is_read ? "bg-brand-cyan/5" : ""
+									}`}
 								>
 									<div className="flex items-start gap-3">
 										{!notification.is_read && (

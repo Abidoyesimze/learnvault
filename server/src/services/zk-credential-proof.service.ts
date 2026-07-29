@@ -21,7 +21,9 @@ export async function verifyCredentialProof(input: VerifyInput): Promise<{
 	const digest = crypto.createHash("sha256").update(input.proof).digest("hex")
 	const expectedNullifier = crypto
 		.createHash("sha256")
-		.update(`${input.publicSignals.credentialHash}:${input.publicSignals.thresholdMet}`)
+		.update(
+			`${input.publicSignals.credentialHash}:${input.publicSignals.thresholdMet}`,
+		)
 		.digest("hex")
 	const valid =
 		Boolean(input.publicSignals.credentialHash) &&

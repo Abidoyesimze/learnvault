@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { type CourseRatingSummary, type CourseReview } from "../types/courses"
 import { useWallet } from "./useWallet"
-import type { CourseRatingSummary, CourseReview } from "../types/courses"
 
 const EMPTY_SUMMARY: CourseRatingSummary = { average: 0, count: 0 }
 
@@ -39,7 +39,9 @@ const asJson = async <T>(response: Response): Promise<T> => {
 	return payload
 }
 
-const normalizeReview = (row: NonNullable<ReviewsResponse["reviews"]>[number]): CourseReview => ({
+const normalizeReview = (
+	row: NonNullable<ReviewsResponse["reviews"]>[number],
+): CourseReview => ({
 	id: String(row.id ?? crypto.randomUUID()),
 	courseId: String(row.course_id ?? ""),
 	walletAddress: String(row.wallet_address ?? ""),
@@ -62,7 +64,8 @@ export function useCourseRatingSummary(courseId: string | undefined) {
 				const summary = data.rating_summary ?? data
 				const average = Number(summary.average ?? 0)
 				const count = Number(summary.count ?? 0)
-				if (!Number.isFinite(average) || !Number.isFinite(count)) return EMPTY_SUMMARY
+				if (!Number.isFinite(average) || !Number.isFinite(count))
+					return EMPTY_SUMMARY
 				return { average, count }
 			} catch (error) {
 				if (error instanceof Error && error.message === "REVIEWS_UNAVAILABLE") {
@@ -80,21 +83,41 @@ export function useCourseReviews(courseId: string | undefined, page: number) {
 		queryKey: ["course", courseId, "reviews", page, address],
 		enabled: Boolean(courseId),
 		staleTime: 30_000,
-		queryFn: async (): Promise<{ reviews: CourseReview[]; total: number; page: number; pageSize: number; unavailable: boolean }> => {
+		queryFn: async (): Promise<{
+			reviews: CourseReview[]
+			total: number
+			page: number
+			pageSize: number
+			unavailable: boolean
+		}> => {
 			if (!courseId) {
-				return { reviews: [], total: 0, page: 1, pageSize: 10, unavailable: false }
+				return {
+					reviews: [],
+					total: 0,
+					page: 1,
+					pageSize: 10,
+					unavailable: false,
+				}
 			}
 			try {
-				const response = await fetch(`/api/courses/${courseId}/reviews?page=${page}&limit=5`)
+				const response = await fetch(
+					`/api/courses/${courseId}/reviews?page=${page}&limit=5`,
+				)
 				const data = await asJson<ReviewsResponse>(response)
 				const list = (data.reviews ?? []).map(normalizeReview)
 				const mapped =
 					address && address.length > 0
 						? [
 								...list
-									.filter((r) => r.walletAddress.toLowerCase() === address.toLowerCase())
+									.filter(
+										(r) =>
+											r.walletAddress.toLowerCase() === address.toLowerCase(),
+									)
 									.map((r) => ({ ...r, isOwn: true })),
-								...list.filter((r) => r.walletAddress.toLowerCase() !== address.toLowerCase()),
+								...list.filter(
+									(r) =>
+										r.walletAddress.toLowerCase() !== address.toLowerCase(),
+								),
 							]
 						: list
 				return {
@@ -133,8 +156,12 @@ export function useUpsertCourseReview(courseId: string | undefined) {
 			await asJson(response)
 		},
 		onSuccess: async () => {
-			await queryClient.invalidateQueries({ queryKey: ["course", courseId, "reviews"] })
-			await queryClient.invalidateQueries({ queryKey: ["course", courseId, "ratingSummary"] })
+			await queryClient.invalidateQueries({
+				queryKey: ["course", courseId, "reviews"],
+			})
+			await queryClient.invalidateQueries({
+				queryKey: ["course", courseId, "ratingSummary"],
+			})
 		},
 	})
 }

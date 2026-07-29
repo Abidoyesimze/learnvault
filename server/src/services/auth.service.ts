@@ -50,6 +50,7 @@ export type AuthService = {
 		accessToken: string
 		refreshToken: string
 	}>
+	revokeToken(token: string): Promise<void>
 }
 
 export function createAuthService(

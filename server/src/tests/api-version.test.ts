@@ -23,7 +23,9 @@ describe("apiVersionRedirect", () => {
 	})
 
 	it("preserves the query string when redirecting", async () => {
-		const res = await request(app).get("/api/courses?limit=5&q=rust").redirects(0)
+		const res = await request(app)
+			.get("/api/courses?limit=5&q=rust")
+			.redirects(0)
 		expect(res.status).toBe(301)
 		expect(res.headers.location).toBe("/api/v1/courses?limit=5&q=rust")
 	})

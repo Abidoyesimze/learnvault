@@ -1,11 +1,11 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { renderHook, waitFor } from "@testing-library/react"
+import { createElement, type ReactNode } from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { useAdminContracts, useTreasuryPauseControl } from "./useAdminContracts"
 import * as sorobanAdmin from "../util/sorobanAdmin"
+import { useAdminContracts, useTreasuryPauseControl } from "./useAdminContracts"
 import { useContractIds } from "./useContractIds"
 import { useWallet } from "./useWallet"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { createElement, type ReactNode } from "react"
 
 vi.mock("../util/sorobanAdmin", () => ({
 	getCourseMilestoneState: vi.fn(),
@@ -46,8 +46,9 @@ describe("useAdminContracts hooks", () => {
 			} as any)
 
 			vi.mocked(sorobanAdmin.getScholarshipTreasuryState).mockResolvedValue({
-				isPaused: false,
-				owner: "G1",
+				contractId: "TREASURY",
+				paused: false,
+				adminAddress: "G1",
 			} as any)
 
 			const { result } = renderHook(() => useAdminContracts(), {
@@ -61,7 +62,7 @@ describe("useAdminContracts hooks", () => {
 				name: "Learn Token",
 				contractId: "LEARN",
 			})
-			expect(result.current.data?.scholarshipTreasuryState?.isPaused).toBe(false)
+			expect(result.current.data?.scholarshipTreasuryState?.paused).toBe(false)
 		})
 	})
 
@@ -74,7 +75,9 @@ describe("useAdminContracts hooks", () => {
 				address: "G1",
 				signTransaction: vi.fn(),
 			} as any)
-			vi.mocked(sorobanAdmin.invokeContractMethod).mockResolvedValue({ txHash: "hash" })
+			vi.mocked(sorobanAdmin.invokeContractMethod).mockResolvedValue(
+				"txhash123",
+			)
 
 			const { result } = renderHook(() => useTreasuryPauseControl(), {
 				wrapper: createWrapper(),

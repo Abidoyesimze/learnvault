@@ -31,11 +31,19 @@ export default function ImpactWidget() {
 				LearnVault Impact
 			</p>
 			<div className="mt-4 grid grid-cols-3 gap-2">
-				<MiniMetric label="Scholars" value={data.total_scholars_funded.toString()} />
-				<MiniMetric label="USDC" value={formatValue(data.total_usdc_disbursed)} />
+				<MiniMetric
+					label="Scholars"
+					value={data.total_scholars_funded.toString()}
+				/>
+				<MiniMetric
+					label="USDC"
+					value={formatValue(data.total_usdc_disbursed)}
+				/>
 				<MiniMetric label="LRN" value={formatValue(data.total_lrn_minted)} />
 			</div>
-			<p className="mt-4 text-[10px] text-white/50">Updated {new Date(data.generated_at).toLocaleDateString()}</p>
+			<p className="mt-4 text-[10px] text-white/50">
+				Updated {new Date(data.generated_at).toLocaleDateString()}
+			</p>
 		</div>
 	)
 }
@@ -43,7 +51,9 @@ export default function ImpactWidget() {
 function MiniMetric({ label, value }: { label: string; value: string }) {
 	return (
 		<div className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
-			<p className="text-[9px] font-black uppercase tracking-[0.18em] text-white/50">{label}</p>
+			<p className="text-[9px] font-black uppercase tracking-[0.18em] text-white/50">
+				{label}
+			</p>
 			<p className="mt-1 text-sm font-black text-brand-cyan">{value}</p>
 		</div>
 	)

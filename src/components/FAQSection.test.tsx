@@ -19,7 +19,9 @@ describe("FAQSection Component", () => {
 
 		// Check some of our questions exist
 		expect(
-			screen.getByText("What is Soroban and how does it integrate with LearnVault?"),
+			screen.getByText(
+				"What is Soroban and how does it integrate with LearnVault?",
+			),
 		).toBeInTheDocument()
 		expect(
 			screen.getByText("Which Web3 wallets are supported on LearnVault?"),
@@ -56,7 +58,9 @@ describe("FAQSection Component", () => {
 
 		// Soroban question should be there
 		expect(
-			screen.getByText("What is Soroban and how does it integrate with LearnVault?"),
+			screen.getByText(
+				"What is Soroban and how does it integrate with LearnVault?",
+			),
 		).toBeInTheDocument()
 
 		// Web3 Wallets question should NOT be there
@@ -70,16 +74,24 @@ describe("FAQSection Component", () => {
 
 		const questionText =
 			"What is Soroban and how does it integrate with LearnVault?"
-		const questionButton = screen.getByRole("button", { name: new RegExp(questionText, "i") })
+		const questionButton = screen.getByRole("button", {
+			name: new RegExp(questionText, "i"),
+		})
 
 		// Answer shouldn't be visible initially (not rendered or height 0 inside accordion)
-		expect(screen.queryByText(/native, high-performance smart contract platform/i)).not.toBeInTheDocument()
+		expect(
+			screen.queryByText(/native, high-performance smart contract platform/i),
+		).not.toBeInTheDocument()
 
 		// Click to expand
 		fireEvent.click(questionButton)
 
 		// Answer should now be visible in the DOM
-		expect(await screen.findByText(/native, high-performance smart contract platform/i)).toBeInTheDocument()
+		expect(
+			await screen.findByText(
+				/native, high-performance smart contract platform/i,
+			),
+		).toBeInTheDocument()
 	})
 
 	it("can submit helpful feedback on individual FAQ items", async () => {
@@ -88,7 +100,9 @@ describe("FAQSection Component", () => {
 		// First, expand the accordion to make the helpfulness buttons visible
 		const questionText =
 			"What is Soroban and how does it integrate with LearnVault?"
-		const questionButton = screen.getByRole("button", { name: new RegExp(questionText, "i") })
+		const questionButton = screen.getByRole("button", {
+			name: new RegExp(questionText, "i"),
+		})
 		fireEvent.click(questionButton)
 
 		// Click Thumbs Up button

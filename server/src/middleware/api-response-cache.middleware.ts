@@ -1,5 +1,10 @@
 import { type Request, type Response, type NextFunction } from "express"
-import { API_RESPONSE_CACHE_TTLS, type ApiCacheType, getApiResponseCacheKey, getApiResponseCacheStore } from "../lib/api-response-cache"
+import {
+	API_RESPONSE_CACHE_TTLS,
+	type ApiCacheType,
+	getApiResponseCacheKey,
+	getApiResponseCacheStore,
+} from "../lib/api-response-cache"
 
 /**
  * Redis-backed API cache for JSON responses.
@@ -55,11 +60,9 @@ export function apiResponseCache(cacheType: ApiCacheType) {
 
 			const ret = originalJson(body)
 			if (shouldCache) {
-				void store
-					.set(key, JSON.stringify(body), ttlSeconds)
-					.catch(() => {
-						/* Non-fatal */
-					})
+				void store.set(key, JSON.stringify(body), ttlSeconds).catch(() => {
+					/* Non-fatal */
+				})
 			}
 			return ret
 		}
@@ -67,4 +70,3 @@ export function apiResponseCache(cacheType: ApiCacheType) {
 		next()
 	}
 }
-

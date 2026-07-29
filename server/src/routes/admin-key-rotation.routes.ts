@@ -1,11 +1,11 @@
 import { Router, type Request, type Response } from "express"
-import { type Database } from "pg"
+import { type Pool } from "pg"
 
 import { createAdminKeyRotationController } from "../controllers/admin-key-rotation.controller"
-import { createAdminKeyRotationService } from "../services/admin-key-rotation.service"
 import { requireAdmin } from "../middleware/admin.middleware"
+import { createAdminKeyRotationService } from "../services/admin-key-rotation.service"
 
-export function createAdminKeyRotationRouter(db: Database): Router {
+export function createAdminKeyRotationRouter(db: Pool): Router {
 	const router = Router()
 	const keyRotationService = createAdminKeyRotationService(db)
 	const controller = createAdminKeyRotationController(keyRotationService)

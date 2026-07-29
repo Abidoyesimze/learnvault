@@ -1,3 +1,4 @@
+import confetti from "canvas-confetti"
 import React, { useContext, useEffect, useState } from "react"
 import { Helmet } from "react-helmet"
 import { useTranslation } from "react-i18next"
@@ -11,20 +12,20 @@ import ProfileEditForm, {
 	type ProfileFormData,
 } from "../components/ProfileEditForm"
 import { ProfileLinkedWallets } from "../components/ProfileLinkedWallets"
+import { ReferralCard } from "../components/ReferralCard"
 import { ReputationBadge } from "../components/ReputationBadge"
 import {
 	NoCredentialsEmptyState,
 	ProfileSkeleton,
 } from "../components/SkeletonLoader"
 import { ErrorState } from "../components/states/errorState"
-import { useUserScholarNfts } from "../hooks/useScholarNft"
 import { useLearnerProfile } from "../hooks/useLearnerProfile"
 import { useScholarCredentials } from "../hooks/useScholarCredentials"
+import { useUserScholarNfts } from "../hooks/useScholarNft"
 import { useScholarProfile } from "../hooks/useScholarProfile"
 import { WalletContext } from "../providers/WalletProvider"
 import { formatDuration, getLearningTimeSummary } from "../util/learningTime"
 import { shortenAddress } from "../util/scholarshipApplications"
-import confetti from "canvas-confetti"
 
 interface UserProfile {
 	id: string
@@ -65,23 +66,19 @@ const Profile: React.FC = () => {
 	const { t } = useTranslation()
 	const { walletAddress: paramAddress } = useParams<{ walletAddress: string }>()
 	const { address: walletAddress } = useContext(WalletContext)
-const displayAddress = paramAddress || walletAddress
+	const displayAddress = paramAddress || walletAddress
 
-const {
-	credentials,
-	isLoading,
-	error,
-	refetch,
-} = useUserScholarNfts(walletAddress)
+	const { credentials, isLoading, error, refetch } =
+		useUserScholarNfts(walletAddress)
 
-const {
-	data: profile,
-	isLoading: isProfileLoading,
-	error: profileError,
-} = useScholarProfile(displayAddress)
+	const {
+		data: profile,
+		isLoading: isProfileLoading,
+		error: profileError,
+	} = useScholarProfile(displayAddress)
 
-const [localLoading, setLocalLoading] = useState(true)
-const [localError, setLocalError] = useState<string | null>(null)
+	const [localLoading, setLocalLoading] = useState(true)
+	const [localError, setLocalError] = useState<string | null>(null)
 	const [nfts, setNfts] = useState<UserNft[]>([])
 	const [learningTimeLabel, setLearningTimeLabel] = useState("0m")
 	const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
@@ -90,65 +87,61 @@ const [localError, setLocalError] = useState<string | null>(null)
 	const [isSaving, setIsSaving] = useState(false)
 	const [viewAddress, setViewAddress] = useState<string | null>(null)
 
-useEffect(() => {
-	if (credentials.length > 0) {
-		const now = Math.floor(Date.now() / 1000)
-		const seenNftsStr = localStorage.getItem("learnvault_seen_nfts")
+	useEffect(() => {
+		if (credentials.length > 0) {
+			const now = Math.floor(Date.now() / 1000)
+			const seenNftsStr = localStorage.getItem("learnvault_seen_nfts")
 
-		let seenIds: string[] = []
+			let seenIds: string[] = []
 
-		if (seenNftsStr) {
-			try {
-				seenIds = JSON.parse(seenNftsStr) as string[]
-			} catch {}
-		}
-
-		let hasNewNft = false
-
-		const mapped = credentials.map((cred) => {
-			const isMintedRecently = cred.issuedAt
-				? now - cred.issuedAt < 600
-				: false
-
-			const isUnseen =
-				seenIds.length > 0 && !seenIds.includes(cred.id)
-
-			const isNew = isMintedRecently || isUnseen
-
-			if (isNew) {
-				hasNewNft = true
+			if (seenNftsStr) {
+				try {
+					seenIds = JSON.parse(seenNftsStr) as string[]
+				} catch {}
 			}
 
-			return {
-				id: cred.id,
-				program: cred.programName,
-				date: cred.completionDate,
-				artwork: cred.artworkUrl || undefined,
-				isNew,
-			}
-		})
+			let hasNewNft = false
 
-		setNfts(mapped)
+			const mapped = credentials.map((cred) => {
+				const isMintedRecently = cred.issuedAt
+					? now - cred.issuedAt < 600
+					: false
 
-		if (hasNewNft) {
-			confetti({
-				particleCount: 150,
-				spread: 80,
-				origin: { y: 0.6 },
-				colors: ["#00d2ff", "#8e2de2", "#00ff80", "#3a7bd5"],
+				const isUnseen = seenIds.length > 0 && !seenIds.includes(cred.id)
+
+				const isNew = isMintedRecently || isUnseen
+
+				if (isNew) {
+					hasNewNft = true
+				}
+
+				return {
+					id: cred.id,
+					program: cred.programName,
+					date: cred.completionDate,
+					artwork: cred.artworkUrl || undefined,
+					isNew,
+				}
 			})
+
+			setNfts(mapped)
+
+			if (hasNewNft) {
+				void confetti({
+					particleCount: 150,
+					spread: 80,
+					origin: { y: 0.6 },
+					colors: ["#00d2ff", "#8e2de2", "#00ff80", "#3a7bd5"],
+				})
+			}
+
+			const allIds = credentials.map((c) => c.id)
+
+			localStorage.setItem("learnvault_seen_nfts", JSON.stringify(allIds))
+		} else {
+			setNfts([])
 		}
-
-		const allIds = credentials.map((c) => c.id)
-
-		localStorage.setItem(
-			"learnvault_seen_nfts",
-			JSON.stringify(allIds),
-		)
-	} else {
-		setNfts([])
-	}
-}, [credentials])
+	}, [credentials])
 
 	useEffect(() => {
 		const summary = getLearningTimeSummary()
@@ -295,13 +288,13 @@ useEffect(() => {
 							<div className="px-5 py-2 glass rounded-full border border-white/10 text-xs font-black uppercase tracking-widest text-white/40">
 								{t("wallet.connect")}
 							</div>
-							<div className="text-center md:text-left">
-								<div className="text-xl font-black text-white">
-									{profile?.following_count || 0}
-								</div>
-								<div className="text-[10px] uppercase font-black tracking-widest text-white/30">
-									Following
-								</div>
+						)}
+						<div className="text-center md:text-left">
+							<div className="text-xl font-black text-white">
+								{profile?.following_count || 0}
+							</div>
+							<div className="text-[10px] uppercase font-black tracking-widest text-white/30">
+								Following
 							</div>
 						</div>
 						<div className="w-px h-10 bg-white/10 hidden md:block" />
@@ -327,16 +320,6 @@ useEffect(() => {
 								</div>
 							)}
 						</div>
-						{stats?.reputationRank && (
-							<div className="px-5 py-2 glass rounded-full border border-white/10 text-xs font-black uppercase tracking-widest text-brand-purple">
-								Rank #{stats.reputationRank}
-							</div>
-						)}
-						{stats?.percentile && (
-							<div className="px-5 py-2 glass rounded-full border border-white/10 text-xs font-black uppercase tracking-widest text-brand-emerald">
-								Top {stats.percentile}%
-							</div>
-						)}
 					</div>
 
 					{/* Social Links */}
@@ -437,6 +420,7 @@ useEffect(() => {
 				</section>
 			)}
 
+			{walletAddress && !paramAddress && <ReferralCard />}
 			<ProfileLinkedWallets />
 
 			<section>

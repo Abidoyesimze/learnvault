@@ -28,9 +28,20 @@ const testJwtService = {
 		}
 		const sub = d.sub ?? d.address ?? ""
 		if (!sub) throw new Error("Invalid token")
-		return { sub }
+		return { sub, jti: "" }
 	},
 	revokeToken: async () => {},
+	signRefreshToken: () => "mock-refresh-token",
+	issueTokenPair: () => ({
+		accessToken: "mock-token",
+		refreshToken: "mock-refresh-token",
+	}),
+	verifyRefreshToken: async () => ({ sub: "mock-address", jti: "mock-jti" }),
+	rotateRefreshToken: async () => ({
+		accessToken: "mock-token",
+		refreshToken: "mock-refresh-token",
+		sub: "mock-address",
+	}),
 }
 
 function makeWalletToken(address = "GREVIEWER1") {

@@ -1,4 +1,4 @@
-import { clearAuthToken, getAuthToken } from "../util/auth"
+import { clearAuthSession, getAuthToken } from "../util/auth"
 
 const readEnv = (...keys: string[]): string => {
 	for (const key of keys) {
@@ -41,6 +41,6 @@ export async function logoutSession(): Promise<void> {
 	} catch {
 		// Local logout should still proceed even if the server is unavailable.
 	} finally {
-		clearAuthToken()
+		clearAuthSession()
 	}
 }

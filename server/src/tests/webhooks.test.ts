@@ -6,7 +6,9 @@ import { webhooksRouter } from "../routes/webhooks.routes"
 import { processWebhookEvents } from "../services/event-indexer.service"
 
 jest.mock("../services/event-indexer.service", () => ({
-	processWebhookEvents: jest.fn().mockResolvedValue({ inserted: 1, skipped: 0 }),
+	processWebhookEvents: jest
+		.fn()
+		.mockResolvedValue({ inserted: 1, skipped: 0 }),
 }))
 
 const mockedProcessWebhookEvents = processWebhookEvents as jest.MockedFunction<
@@ -35,7 +37,11 @@ const samplePayload = {
 
 function buildApp() {
 	const app = express()
-	app.use("/api/webhooks", express.raw({ type: "application/json" }), webhooksRouter)
+	app.use(
+		"/api/webhooks",
+		express.raw({ type: "application/json" }),
+		webhooksRouter,
+	)
 	return app
 }
 
@@ -66,7 +72,9 @@ describe("POST /api/webhooks/horizon", () => {
 
 		await new Promise((resolve) => setImmediate(resolve))
 
-		expect(mockedProcessWebhookEvents).toHaveBeenCalledWith(samplePayload.events)
+		expect(mockedProcessWebhookEvents).toHaveBeenCalledWith(
+			samplePayload.events,
+		)
 	})
 
 	it("rejects unsigned requests with 401", async () => {

@@ -16,9 +16,7 @@ test.describe("Error states and recovery", () => {
 		await page.goto("/this-does-not-exist")
 		await expect(page.getByTestId("not-found-page")).toBeVisible()
 		await expect(page.getByRole("heading", { name: "404" })).toBeVisible()
-		await expect(
-			page.getByText(/This page doesn't exist/i),
-		).toBeVisible()
+		await expect(page.getByText(/This page doesn't exist/i)).toBeVisible()
 
 		// 5 (partial): Go Home from 404
 		await page.getByTestId("not-found-go-home").click()

@@ -860,18 +860,34 @@ export const createCourse = async (
 		if ("prerequisites" in body) {
 			const reqPrereqs = body.prerequisites
 			if (!Array.isArray(reqPrereqs)) {
-				res.status(400).json({ error: "prerequisites must be an array of course IDs", field: "prerequisites" })
+				res.status(400).json({
+					error: "prerequisites must be an array of course IDs",
+					field: "prerequisites",
+				})
 				return
 			}
-			if (reqPrereqs.some((item) => typeof item !== "number" || !Number.isInteger(item))) {
-				res.status(400).json({ error: "prerequisites must be an array of integers", field: "prerequisites" })
+			if (
+				reqPrereqs.some(
+					(item) => typeof item !== "number" || !Number.isInteger(item),
+				)
+			) {
+				res.status(400).json({
+					error: "prerequisites must be an array of integers",
+					field: "prerequisites",
+				})
 				return
 			}
 			if (reqPrereqs.length > 0) {
 				const uniqueIds = Array.from(new Set(reqPrereqs))
-				const check = await pool.query("SELECT id FROM courses WHERE id = ANY($1::integer[])", [uniqueIds])
+				const check = await pool.query(
+					"SELECT id FROM courses WHERE id = ANY($1::integer[])",
+					[uniqueIds],
+				)
 				if (check.rows.length !== uniqueIds.length) {
-					res.status(400).json({ error: "One or more prerequisite course IDs do not exist", field: "prerequisites" })
+					res.status(400).json({
+						error: "One or more prerequisite course IDs do not exist",
+						field: "prerequisites",
+					})
 					return
 				}
 				prerequisites = reqPrereqs
@@ -993,22 +1009,41 @@ export const updateCourse = async (
 		if ("prerequisites" in body) {
 			const reqPrereqs = body.prerequisites
 			if (!Array.isArray(reqPrereqs)) {
-				res.status(400).json({ error: "prerequisites must be an array of course IDs", field: "prerequisites" })
+				res.status(400).json({
+					error: "prerequisites must be an array of course IDs",
+					field: "prerequisites",
+				})
 				return
 			}
-			if (reqPrereqs.some((item) => typeof item !== "number" || !Number.isInteger(item))) {
-				res.status(400).json({ error: "prerequisites must be an array of integers", field: "prerequisites" })
+			if (
+				reqPrereqs.some(
+					(item) => typeof item !== "number" || !Number.isInteger(item),
+				)
+			) {
+				res.status(400).json({
+					error: "prerequisites must be an array of integers",
+					field: "prerequisites",
+				})
 				return
 			}
 			if (reqPrereqs.includes(id)) {
-				res.status(400).json({ error: "A course cannot be a prerequisite of itself", field: "prerequisites" })
+				res.status(400).json({
+					error: "A course cannot be a prerequisite of itself",
+					field: "prerequisites",
+				})
 				return
 			}
 			if (reqPrereqs.length > 0) {
 				const uniqueIds = Array.from(new Set(reqPrereqs))
-				const check = await pool.query("SELECT id FROM courses WHERE id = ANY($1::integer[])", [uniqueIds])
+				const check = await pool.query(
+					"SELECT id FROM courses WHERE id = ANY($1::integer[])",
+					[uniqueIds],
+				)
 				if (check.rows.length !== uniqueIds.length) {
-					res.status(400).json({ error: "One or more prerequisite course IDs do not exist", field: "prerequisites" })
+					res.status(400).json({
+						error: "One or more prerequisite course IDs do not exist",
+						field: "prerequisites",
+					})
 					return
 				}
 			}

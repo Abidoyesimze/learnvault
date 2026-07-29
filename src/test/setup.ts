@@ -45,8 +45,6 @@ vi.mock("../contracts/scholarship_treasury", () => ({
 	default: mockContracts.scholarshipTreasury,
 }))
 
-
-
 // Mock @stellar/design-system to avoid CSS import issues
 vi.mock("@stellar/design-system", () => ({
 	Alert: () => null,
@@ -98,7 +96,6 @@ const mockEnv = {
 		"CGOV1234567890ABCDEFGHIJKLMN9876543210ZYXWVUTSRQPO",
 	PUBLIC_SCHOLARSHIP_TREASURY_CONTRACT_ID:
 		"CSCHOL1234567890ABCDEFGHIJKLMN9876543210ZYXWVUTSRQPO",
-	
 }
 
 // Stub import.meta.env for modules that read contract addresses at load time

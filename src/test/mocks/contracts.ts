@@ -35,8 +35,6 @@ export const mockContractMethods = {
 		status: "pending",
 	}),
 	withdraw: createMockContractMethod(undefined),
-
-
 }
 
 // Contract client factory
@@ -79,8 +77,6 @@ export const mockContracts = {
 		get_proposals_by_status: createMockContractMethod([]),
 		has_voted: createMockContractMethod(false),
 	}),
-
-	
 }
 
 // Dynamic import mock for contract clients
@@ -88,7 +84,6 @@ export const mockContractImports: Record<string, any> = {
 	"../contracts/learn_token": mockContracts.learnToken,
 	"../contracts/governance_token": mockContracts.governanceToken,
 	"../contracts/scholarship_treasury": mockContracts.scholarshipTreasury,
-	
 }
 
 // Helper to mock contract imports in tests

@@ -7,11 +7,11 @@ import {
 	sendVerificationEmail,
 	verifyEmailToken,
 } from "../services/email-verification.service"
-import { sendOtp, verifyOtp } from "../services/twilio-otp.service"
 import {
 	submitBiometricVerification,
 	submitDocumentVerification,
 } from "../services/smile-identity.service"
+import { sendOtp, verifyOtp } from "../services/twilio-otp.service"
 
 const log = logger.child({ module: "anti-sybil" })
 
@@ -145,7 +145,8 @@ export async function initiateVerification(
 					expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
 				})
 				res.json({
-					message: "Verification email sent. Check your inbox and click the link.",
+					message:
+						"Verification email sent. Check your inbox and click the link.",
 				})
 				break
 			}
@@ -385,8 +386,11 @@ export async function kycWebhook(req: Request, res: Response): Promise<void> {
 			.update(rawBody)
 			.digest("hex")
 
+		const sigBuf = Buffer.from(signature)
+		const expectedBuf = Buffer.from(expected)
 		if (
-			!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))
+			sigBuf.length !== expectedBuf.length ||
+			!crypto.timingSafeEqual(sigBuf, expectedBuf)
 		) {
 			res.status(401).json({ error: "Invalid webhook signature" })
 			return

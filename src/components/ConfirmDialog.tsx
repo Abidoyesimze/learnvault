@@ -49,7 +49,9 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 			<div className="glass-card max-w-md w-full p-8 rounded-[2.5rem] border border-white/10 shadow-2xl animate-in zoom-in-95 duration-300">
 				<div
 					className={`w-16 h-16 rounded-full flex items-center justify-center mb-6 ${
-						isDestructive ? "bg-red-500/20 text-red-400" : "bg-brand-cyan/20 text-brand-cyan"
+						isDestructive
+							? "bg-red-500/20 text-red-400"
+							: "bg-brand-cyan/20 text-brand-cyan"
 					}`}
 				>
 					<span className="text-2xl" aria-hidden="true">

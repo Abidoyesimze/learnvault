@@ -1,4 +1,4 @@
-import { Router } from "express"
+import { type Request, type Response, Router } from "express"
 
 import { createAuthControllers } from "../controllers/auth.controller"
 import { createRequireAuth } from "../middleware/auth.middleware"
@@ -12,6 +12,7 @@ export function createAuthRouter(
 	jwtService: JwtService,
 ): Router {
 	const router = Router()
+	const requireAuth = createRequireAuth(jwtService)
 	const {
 		getNonce,
 		postVerify,
@@ -19,6 +20,19 @@ export function createAuthRouter(
 		postChallengeVerify,
 		postRefresh,
 	} = createAuthControllers(authService)
+
+	async function postLogout(req: Request, res: Response): Promise<void> {
+		const header = req.headers.authorization
+		if (header?.startsWith("Bearer ")) {
+			const token = header.slice("Bearer ".length).trim()
+			try {
+				await jwtService.revokeToken(token)
+			} catch {
+				// Best-effort revocation
+			}
+		}
+		res.status(200).json({ message: "Logged out" })
+	}
 
 	router.get("/challenge", nonceRateLimiter, (req, res) => {
 		void getChallenge(req, res)

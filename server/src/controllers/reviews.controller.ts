@@ -108,11 +108,9 @@ export const createCourseReview = async (
 		)) as { rows: Array<{ id: number }> }
 
 		if (enrollment.rows.length === 0) {
-			res
-				.status(403)
-				.json({
-					error: "You must be enrolled in this course to leave a review",
-				})
+			res.status(403).json({
+				error: "You must be enrolled in this course to leave a review",
+			})
 			return
 		}
 
@@ -120,12 +118,10 @@ export const createCourseReview = async (
 
 		const rating = Number(body.rating)
 		if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
-			res
-				.status(400)
-				.json({
-					error: "rating must be an integer between 1 and 5",
-					field: "rating",
-				})
+			res.status(400).json({
+				error: "rating must be an integer between 1 and 5",
+				field: "rating",
+			})
 			return
 		}
 
@@ -138,12 +134,10 @@ export const createCourseReview = async (
 				return
 			}
 			if (body.reviewText.length > 2000) {
-				res
-					.status(400)
-					.json({
-						error: "reviewText must be 2000 characters or fewer",
-						field: "reviewText",
-					})
+				res.status(400).json({
+					error: "reviewText must be 2000 characters or fewer",
+					field: "reviewText",
+				})
 				return
 			}
 			reviewText =

@@ -121,7 +121,9 @@ describe("Leaderboard Component", () => {
 		render(<Leaderboard />)
 
 		await waitFor(() => {
-			expect(screen.getByText("GA1111111111111111111111111111111111111111")).toBeInTheDocument()
+			expect(
+				screen.getByText("GA1111111111111111111111111111111111111111"),
+			).toBeInTheDocument()
 		})
 
 		const rows = screen.getAllByTestId("leaderboard-row")
@@ -137,7 +139,8 @@ describe("Leaderboard Component", () => {
 		render(<Leaderboard />)
 
 		await waitFor(() => {
-			const currentUserRow = screen.getByText("GACURRENTUSERUSERUSERUSERUSERUSERUSERUSERTTT")
+			const currentUserRow = screen
+				.getByText("GACURRENTUSERUSERUSERUSERUSERUSERUSERUSERTTT")
 				.closest("tr")
 			expect(currentUserRow).toHaveClass("bg-brand-cyan/10")
 		})
@@ -203,7 +206,9 @@ describe("Leaderboard Component", () => {
 		render(<Leaderboard />)
 
 		await waitFor(() => {
-			expect(screen.getByText("GA1111111111111111111111111111111111111111")).toBeInTheDocument()
+			expect(
+				screen.getByText("GA1111111111111111111111111111111111111111"),
+			).toBeInTheDocument()
 		})
 
 		// Pagination controls should be present
@@ -234,7 +239,9 @@ describe("Leaderboard Component", () => {
 
 		await waitFor(() => {
 			const firstLeader = mockLeaderboardData.rankings[0]
-			expect(screen.getByText(String(firstLeader.courses_completed))).toBeInTheDocument()
+			expect(
+				screen.getByText(String(firstLeader.courses_completed)),
+			).toBeInTheDocument()
 		})
 	})
 })

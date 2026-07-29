@@ -38,6 +38,17 @@ const testJwtService: JwtService = {
 		jti: "test-jti",
 	}),
 	revokeToken: async () => {},
+	signRefreshToken: () => "mock-refresh-token",
+	issueTokenPair: () => ({
+		accessToken: "mock-token",
+		refreshToken: "mock-refresh-token",
+	}),
+	verifyRefreshToken: async () => ({ sub: "GSCHOLAR1", jti: "test-jti" }),
+	rotateRefreshToken: async () => ({
+		accessToken: "mock-token",
+		refreshToken: "mock-refresh-token",
+		sub: "GSCHOLAR1",
+	}),
 }
 
 const buildApp = (): express.Express => {

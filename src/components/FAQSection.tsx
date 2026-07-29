@@ -26,63 +26,76 @@ const FAQ_ITEMS: FAQItem[] = [
 		id: "soroban-1",
 		category: "Soroban",
 		question: "What is Soroban and how does it integrate with LearnVault?",
-		answer: "Soroban is Stellar's native, high-performance smart contract platform built with Rust. It provides predictable fees, state archiving, and full WASM execution. LearnVault leverages Soroban smart contracts to automate reputation tracking (our LRN token) and manage decentralized treasury distributions (e.g. scholarship disbursements) directly on-chain when learning milestones are successfully verified.",
+		answer:
+			"Soroban is Stellar's native, high-performance smart contract platform built with Rust. It provides predictable fees, state archiving, and full WASM execution. LearnVault leverages Soroban smart contracts to automate reputation tracking (our LRN token) and manage decentralized treasury distributions (e.g. scholarship disbursements) directly on-chain when learning milestones are successfully verified.",
 		tags: ["stellar", "soroban", "rust", "wasm", "smart contracts"],
 	},
 	{
 		id: "soroban-2",
 		category: "Soroban",
-		question: "What are the gas/network fees for executing transactions on Soroban?",
-		answer: "Stellar and Soroban are designed to be extremely low-cost and efficient. While traditional networks suffer from unpredictable, high gas surges, a typical Soroban contract invocation costs a small fraction of a cent (paid in XLM). LearnVault also implements gas optimization patterns in our contracts so that scholars and contributors face minimal friction during active learning sprint interactions.",
+		question:
+			"What are the gas/network fees for executing transactions on Soroban?",
+		answer:
+			"Stellar and Soroban are designed to be extremely low-cost and efficient. While traditional networks suffer from unpredictable, high gas surges, a typical Soroban contract invocation costs a small fraction of a cent (paid in XLM). LearnVault also implements gas optimization patterns in our contracts so that scholars and contributors face minimal friction during active learning sprint interactions.",
 		tags: ["fees", "gas", "xlm", "transactions", "costs"],
 	},
 	{
 		id: "soroban-3",
 		category: "Soroban",
 		question: "How do I deploy or test Soroban contracts locally?",
-		answer: "To test Soroban contracts locally, you can use the `stellar-cli` tool. First, ensure you have Rust and Cargo installed, then run `cargo install --locked stellar-cli`. You can start a local node with `stellar network start container` or spin up a local development network. The contracts are located inside the `/contracts` directory of our repository, where you can execute `cargo test` to run native unit tests.",
+		answer:
+			"To test Soroban contracts locally, you can use the `stellar-cli` tool. First, ensure you have Rust and Cargo installed, then run `cargo install --locked stellar-cli`. You can start a local node with `stellar network start container` or spin up a local development network. The contracts are located inside the `/contracts` directory of our repository, where you can execute `cargo test` to run native unit tests.",
 		tags: ["deploy", "cli", "testing", "rust", "local dev"],
 	},
 	{
 		id: "wallet-1",
 		category: "Web3 Wallets",
 		question: "Which Web3 wallets are supported on LearnVault?",
-		answer: "LearnVault integrates with `@creit.tech/stellar-wallets-kit`, enabling unified support for all major Stellar web3 wallets. This includes Freighter (the standard browser extension), Albedo, Rovo, Hana Wallet, and Lobstr. You can easily select your preferred wallet by clicking the 'Connect Wallet' button in the navigation bar.",
+		answer:
+			"LearnVault integrates with `@creit.tech/stellar-wallets-kit`, enabling unified support for all major Stellar web3 wallets. This includes Freighter (the standard browser extension), Albedo, Rovo, Hana Wallet, and Lobstr. You can easily select your preferred wallet by clicking the 'Connect Wallet' button in the navigation bar.",
 		tags: ["wallet", "freighter", "albedo", "rovo", "connect"],
 	},
 	{
 		id: "wallet-2",
 		category: "Web3 Wallets",
-		question: "Why does the wallet ask me to sign a transaction, and is it safe?",
-		answer: "In Web3, signing a transaction or message is how you cryptographically prove ownership of your stellar address without sharing your private key. When you enroll in a course, submit a milestone, or vote in the DAO, LearnVault submits a transaction payload to your wallet extension. Your extension prompts you to sign it securely. LearnVault never has access to your private key or seed phrase.",
+		question:
+			"Why does the wallet ask me to sign a transaction, and is it safe?",
+		answer:
+			"In Web3, signing a transaction or message is how you cryptographically prove ownership of your stellar address without sharing your private key. When you enroll in a course, submit a milestone, or vote in the DAO, LearnVault submits a transaction payload to your wallet extension. Your extension prompts you to sign it securely. LearnVault never has access to your private key or seed phrase.",
 		tags: ["signing", "security", "private key", "transactions", "safety"],
 	},
 	{
 		id: "wallet-3",
 		category: "Web3 Wallets",
-		question: "What is a Trustline and why is it required for LRN and USDC tokens?",
-		answer: "The Stellar network utilizes 'trustlines' to prevent spam assets from being deposited into accounts. A trustline is an explicit opt-in that tells the Stellar ledger your account is willing to hold a specific asset issued by a specific account. To receive LearnVault's native LRN reputation tokens or USDC milestone payouts, you must execute a quick 'Establish Trustline' transaction via your connected wallet.",
+		question:
+			"What is a Trustline and why is it required for LRN and USDC tokens?",
+		answer:
+			"The Stellar network utilizes 'trustlines' to prevent spam assets from being deposited into accounts. A trustline is an explicit opt-in that tells the Stellar ledger your account is willing to hold a specific asset issued by a specific account. To receive LearnVault's native LRN reputation tokens or USDC milestone payouts, you must execute a quick 'Establish Trustline' transaction via your connected wallet.",
 		tags: ["trustline", "lrn", "usdc", "stellar asset", "spam"],
 	},
 	{
 		id: "encrypt-1",
 		category: "File Encryption",
 		question: "How does LearnVault securely encrypt my milestone submissions?",
-		answer: "Your privacy is a core pillar of LearnVault. When you submit project files, code screenshots, or milestone answers, they are encrypted client-side in your browser using strong AES-GCM-256 symmetric encryption. The encrypted ciphertext is then uploaded to IPFS (InterPlanetary File System). The corresponding decryption key is never shared on public networks or stored on centralized databases.",
+		answer:
+			"Your privacy is a core pillar of LearnVault. When you submit project files, code screenshots, or milestone answers, they are encrypted client-side in your browser using strong AES-GCM-256 symmetric encryption. The encrypted ciphertext is then uploaded to IPFS (InterPlanetary File System). The corresponding decryption key is never shared on public networks or stored on centralized databases.",
 		tags: ["aes", "ipfs", "encryption", "milestone", "security"],
 	},
 	{
 		id: "encrypt-2",
 		category: "File Encryption",
-		question: "Who has the authority to decrypt and review my submitted coursework?",
-		answer: "Only the designated DAO sponsors or authorized peer reviewers who are cryptographically assigned to your scholarship milestone have the access rights to request decryption. When a reviewer opens your submission, their wallet validates their status using our Soroban governance contract, derives the secure key exchange payload, and decrypts the homework files dynamically in their secure browser sandbox.",
+		question:
+			"Who has the authority to decrypt and review my submitted coursework?",
+		answer:
+			"Only the designated DAO sponsors or authorized peer reviewers who are cryptographically assigned to your scholarship milestone have the access rights to request decryption. When a reviewer opens your submission, their wallet validates their status using our Soroban governance contract, derives the secure key exchange payload, and decrypts the homework files dynamically in their secure browser sandbox.",
 		tags: ["reviewers", "decryption", "permissions", "dao", "cryptography"],
 	},
 	{
 		id: "encrypt-3",
 		category: "File Encryption",
 		question: "What happens if I lose my Web3 wallet or private keys?",
-		answer: "Because LearnVault is a fully decentralized, non-custodial protocol, we do not store, manage, or have recovery options for your wallet credentials. Your private key and secret seed phrase are the sole access points to your on-chain reputation, LRN tokens, and encrypted files. We highly recommend using hardware wallets or secure, offline paper backups for your seed phrase.",
+		answer:
+			"Because LearnVault is a fully decentralized, non-custodial protocol, we do not store, manage, or have recovery options for your wallet credentials. Your private key and secret seed phrase are the sole access points to your on-chain reputation, LRN tokens, and encrypted files. We highly recommend using hardware wallets or secure, offline paper backups for your seed phrase.",
 		tags: ["recovery", "non-custodial", "private key", "loss", "seed phrase"],
 	},
 ]
@@ -94,9 +107,15 @@ const escapeRegExp = (string: string) => {
 export function FAQSection() {
 	const [searchQuery, setSearchQuery] = useState("")
 	const [activeCategory, setActiveCategory] = useState<string>("All")
-	const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({})
-	const [helpfulFeedback, setHelpfulFeedback] = useState<Record<string, "yes" | "no">>({})
-	const [feedbackAnimation, setFeedbackAnimation] = useState<string | null>(null)
+	const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(
+		{},
+	)
+	const [helpfulFeedback, setHelpfulFeedback] = useState<
+		Record<string, "yes" | "no">
+	>({})
+	const [feedbackAnimation, setFeedbackAnimation] = useState<string | null>(
+		null,
+	)
 
 	const categories = ["All", "Soroban", "Web3 Wallets", "File Encryption"]
 
@@ -178,7 +197,8 @@ export function FAQSection() {
 					</span>
 				</div>
 				<h2 className="text-4xl sm:text-5xl font-black mb-4 tracking-tight leading-tight">
-					Got questions? We've got <span className="text-gradient">answers</span>.
+					Got questions? We've got{" "}
+					<span className="text-gradient">answers</span>.
 				</h2>
 				<p className="text-white/50 text-base sm:text-lg max-w-xl leading-relaxed">
 					Find quick answers about Soroban contracts, Web3 credentials, and
@@ -442,7 +462,8 @@ export function FAQSection() {
 					</h3>
 					<p className="text-white/40 text-sm max-w-md leading-relaxed font-normal">
 						Our community of developers and instructors is active 24/7. Join the
-						LearnVault Discord server to get help with Stellar, Soroban, and homework encryption.
+						LearnVault Discord server to get help with Stellar, Soroban, and
+						homework encryption.
 					</p>
 				</div>
 

@@ -48,7 +48,8 @@ const SAFE_HTML_ATTRIBUTES = ["href", "title", "target", "rel"]
 
 const DANGEROUS_BLOCK_TAGS =
 	/<(script|style|iframe|object|embed|form|button)[^>]*>[\s\S]*?<\/\1>/gi
-const DANGEROUS_INLINE_TAGS = /<\/?(script|style|iframe|object|embed|form|input|button)[^>]*>/gi
+const DANGEROUS_INLINE_TAGS =
+	/<\/?(script|style|iframe|object|embed|form|input|button)[^>]*>/gi
 const EVENT_HANDLER_ATTRIBUTES = /\son[a-z]+\s*=\s*(".*?"|'.*?'|[^\s>]+)/gi
 
 const fallbackSanitize = (content: string) =>

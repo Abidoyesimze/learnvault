@@ -53,7 +53,9 @@ export default function LessonVersionDiff() {
 
 			if (!response.ok) {
 				const payload = await response.json().catch(() => ({}))
-				throw new Error((payload as { error?: string }).error || "Failed to fetch diff")
+				throw new Error(
+					(payload as { error?: string }).error || "Failed to fetch diff",
+				)
 			}
 
 			const payload = (await response.json()) as DiffResponse
@@ -129,17 +131,23 @@ export default function LessonVersionDiff() {
 				<section className="mt-8 rounded-3xl border border-white/10 bg-white/[0.03] p-6">
 					<div className="grid gap-4 md:grid-cols-2">
 						<div>
-							<h2 className="text-lg font-black">From v{result.from.version}</h2>
+							<h2 className="text-lg font-black">
+								From v{result.from.version}
+							</h2>
 							<p className="text-white/70">{result.from.title}</p>
 							{result.from.change_summary && (
-								<p className="mt-2 text-sm text-white/50">{result.from.change_summary}</p>
+								<p className="mt-2 text-sm text-white/50">
+									{result.from.change_summary}
+								</p>
 							)}
 						</div>
 						<div>
 							<h2 className="text-lg font-black">To v{result.to.version}</h2>
 							<p className="text-white/70">{result.to.title}</p>
 							{result.to.change_summary && (
-								<p className="mt-2 text-sm text-white/50">{result.to.change_summary}</p>
+								<p className="mt-2 text-sm text-white/50">
+									{result.to.change_summary}
+								</p>
 							)}
 						</div>
 					</div>

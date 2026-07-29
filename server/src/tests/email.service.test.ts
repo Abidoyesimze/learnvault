@@ -245,4 +245,3 @@ describe("EmailService", () => {
 		expect(payload.html).toContain(renderData.milestoneTitle)
 	})
 })
-

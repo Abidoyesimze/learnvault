@@ -51,8 +51,4 @@ export const webhooksRouter = Router()
  *       503:
  *         description: Webhook secret not configured
  */
-webhooksRouter.post(
-	"/horizon",
-	verifyWebhookSignature,
-	handleHorizonWebhook,
-)
+webhooksRouter.post("/horizon", verifyWebhookSignature, handleHorizonWebhook)

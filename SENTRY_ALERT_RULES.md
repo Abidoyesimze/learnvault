@@ -1,6 +1,7 @@
 # Sentry Alert Rules Configuration
 
-This document provides instructions for setting up alert rules in Sentry to monitor error rates and critical crashes for LearnVault.
+This document provides instructions for setting up alert rules in Sentry to
+monitor error rates and critical crashes for LearnVault.
 
 ## Prerequisites
 
@@ -11,7 +12,8 @@ This document provides instructions for setting up alert rules in Sentry to moni
 
 ## Alert Rule 1: High Error Rate (Critical)
 
-Triggers when error rate exceeds threshold, indicating potential production issues.
+Triggers when error rate exceeds threshold, indicating potential production
+issues.
 
 ### Via Sentry UI
 
@@ -34,34 +36,34 @@ Triggers when error rate exceeds threshold, indicating potential production issu
 
 ```json
 {
-  "name": "High Error Rate - Backend",
-  "dataset": "errors",
-  "query": "level:error",
-  "aggregate": "count()",
-  "timeWindow": 5,
-  "thresholdType": "greater",
-  "triggerActions": [
-    {
-      "action": "notify",
-      "service": "slack",
-      "channel": "#alerts-production"
-    }
-  ],
-  "conditions": [
-    {
-      "id": "sentry.rules.conditions.event_frequency",
-      "value": 25,
-      "comparison": "greater",
-      "interval": "5m"
-    }
-  ],
-  "filters": [
-    {
-      "id": "sentry.rules.filters.environment",
-      "name": "Production",
-      "environments": ["production", "staging"]
-    }
-  ]
+	"name": "High Error Rate - Backend",
+	"dataset": "errors",
+	"query": "level:error",
+	"aggregate": "count()",
+	"timeWindow": 5,
+	"thresholdType": "greater",
+	"triggerActions": [
+		{
+			"action": "notify",
+			"service": "slack",
+			"channel": "#alerts-production"
+		}
+	],
+	"conditions": [
+		{
+			"id": "sentry.rules.conditions.event_frequency",
+			"value": 25,
+			"comparison": "greater",
+			"interval": "5m"
+		}
+	],
+	"filters": [
+		{
+			"id": "sentry.rules.filters.environment",
+			"name": "Production",
+			"environments": ["production", "staging"]
+		}
+	]
 }
 ```
 
@@ -95,37 +97,37 @@ Triggers on specific critical error types that require immediate attention.
 
 ```json
 {
-  "name": "Critical Application Crash - Backend",
-  "dataset": "issues",
-  "conditions": [
-    {
-      "id": "sentry.rules.conditions.first_seen_event",
-      "name": "An issue is first seen"
-    },
-    {
-      "id": "sentry.rules.conditions.level",
-      "level": 40,
-      "match": "eq"
-    }
-  ],
-  "filters": [
-    {
-      "id": "sentry.rules.filters.environment",
-      "environments": ["production"]
-    }
-  ],
-  "actions": [
-    {
-      "id": "sentry.mail.actions.NotifyEmailAction",
-      "targetType": "specific_users",
-      "targetIdentifier": ["oncall@learnvault.xyz"]
-    },
-    {
-      "id": "sentry.integrations.pagerduty.actions.notify.PagerDutyNotifyService",
-      "account": "learnvault-pagerduty",
-      "severity": "critical"
-    }
-  ]
+	"name": "Critical Application Crash - Backend",
+	"dataset": "issues",
+	"conditions": [
+		{
+			"id": "sentry.rules.conditions.first_seen_event",
+			"name": "An issue is first seen"
+		},
+		{
+			"id": "sentry.rules.conditions.level",
+			"level": 40,
+			"match": "eq"
+		}
+	],
+	"filters": [
+		{
+			"id": "sentry.rules.filters.environment",
+			"environments": ["production"]
+		}
+	],
+	"actions": [
+		{
+			"id": "sentry.mail.actions.NotifyEmailAction",
+			"targetType": "specific_users",
+			"targetIdentifier": ["oncall@learnvault.xyz"]
+		},
+		{
+			"id": "sentry.integrations.pagerduty.actions.notify.PagerDutyNotifyService",
+			"account": "learnvault-pagerduty",
+			"severity": "critical"
+		}
+	]
 }
 ```
 
@@ -253,25 +255,29 @@ Specific alerts for wallet connection and transaction failures.
 
 ## Recommended Alert Thresholds
 
-| Alert Type | Threshold | Time Window | Severity |
-|------------|-----------|-------------|----------|
-| High Error Rate (Backend) | >5 errors/min | 5 min | Critical |
-| High Error Rate (Frontend) | >10 errors/min | 5 min | High |
-| Critical Crash | Any | Immediate | Critical |
-| Error Spike | >200% of baseline | 10 min | Warning |
-| API Endpoint Errors | >3 errors/min | 5 min | High |
-| Wallet Errors | Any (production) | Immediate | High |
+| Alert Type                 | Threshold         | Time Window | Severity |
+| -------------------------- | ----------------- | ----------- | -------- |
+| High Error Rate (Backend)  | >5 errors/min     | 5 min       | Critical |
+| High Error Rate (Frontend) | >10 errors/min    | 5 min       | High     |
+| Critical Crash             | Any               | Immediate   | Critical |
+| Error Spike                | >200% of baseline | 10 min      | Warning  |
+| API Endpoint Errors        | >3 errors/min     | 5 min       | High     |
+| Wallet Errors              | Any (production)  | Immediate   | High     |
 
 ---
 
 ## Best Practices
 
-1. **Avoid Alert Fatigue**: Start with higher thresholds and adjust based on baseline
+1. **Avoid Alert Fatigue**: Start with higher thresholds and adjust based on
+   baseline
 2. **Use Environments**: Separate alerts for production vs. staging/development
-3. **Escalation Policies**: Define clear escalation paths for different severity levels
+3. **Escalation Policies**: Define clear escalation paths for different severity
+   levels
 4. **Runbooks**: Link to runbooks in alert notifications for quick resolution
-5. **Regular Review**: Review and adjust thresholds monthly based on traffic patterns
-6. **Test Alerts**: Periodically test alert delivery to ensure channels are working
+5. **Regular Review**: Review and adjust thresholds monthly based on traffic
+   patterns
+6. **Test Alerts**: Periodically test alert delivery to ensure channels are
+   working
 
 ---
 

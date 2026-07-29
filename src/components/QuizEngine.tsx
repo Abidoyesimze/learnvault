@@ -115,7 +115,9 @@ const QuizEngine: React.FC<QuizEngineProps> = ({
 			case "ArrowUp":
 			case "ArrowLeft":
 				e.preventDefault()
-				setFocusedOptionIndex((prev) => (prev - 1 + optionsCount) % optionsCount)
+				setFocusedOptionIndex(
+					(prev) => (prev - 1 + optionsCount) % optionsCount,
+				)
 				break
 			case "Enter":
 			case " ":

@@ -17,13 +17,9 @@ const router = Router()
  * Initiates a verification flow for the authenticated wallet.
  * Body: { method: "email"|"phone"|"government_id"|"biometric", data: { ... } }
  */
-router.post(
-	"/identity/verify",
-	authMiddleware,
-	(req, res) => {
-		void initiateVerification(req as AuthRequest, res as Response)
-	},
-)
+router.post("/identity/verify", authMiddleware, (req, res) => {
+	void initiateVerification(req as AuthRequest, res as Response)
+})
 
 /**
  * POST /api/identity/confirm
@@ -31,14 +27,9 @@ router.post(
  * Rate-limited to 3 attempts/hour per phone number (OTP abuse prevention).
  * Body: { method, token? (email), phone? + code? (phone) }
  */
-router.post(
-	"/identity/confirm",
-	authMiddleware,
-	otpLimiter,
-	(req, res) => {
-		void confirmVerification(req as AuthRequest, res as Response)
-	},
-)
+router.post("/identity/confirm", authMiddleware, otpLimiter, (req, res) => {
+	void confirmVerification(req as AuthRequest, res as Response)
+})
 
 /**
  * GET /api/identity/verify/email/callback

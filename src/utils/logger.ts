@@ -11,4 +11,5 @@ export const logger = {
 	debug: (...args: unknown[]) => devLog("debug", ...args),
 	info: (...args: unknown[]) => devLog("info", ...args),
 	warn: (...args: unknown[]) => devLog("warn", ...args),
+	error: (...args: unknown[]) => console.error(...args),
 }

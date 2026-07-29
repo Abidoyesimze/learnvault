@@ -17,8 +17,8 @@
   to an unintended address without authorization.
 - Confirm token accounting uses checked arithmetic for balances, supply,
   allowances, votes, counters, tranche state, and proposal IDs.
-- Confirm zero, negative, expired, duplicate, out-of-range, and already-finalized
-  inputs are rejected consistently.
+- Confirm zero, negative, expired, duplicate, out-of-range, and
+  already-finalized inputs are rejected consistently.
 - Confirm cross-contract token calls cannot observe exploitable stale state.
 - Confirm pause behavior covers all intended mutating paths.
 - Confirm upgrade functions preserve storage compatibility and only accept
@@ -29,8 +29,8 @@
 ## Contract-Specific Focus
 
 - `LearnToken`: soulbound enforcement, mint authority, total supply accounting.
-- `GovernanceToken`: transfer/allowance semantics, delegation invariants,
-  voting power, pause coverage.
+- `GovernanceToken`: transfer/allowance semantics, delegation invariants, voting
+  power, pause coverage.
 - `CourseMilestone`: course registry bounds, milestone verification authority,
   duplicate completion prevention.
 - `ScholarshipTreasury`: deposits, proposal voting, quorum/approval math,

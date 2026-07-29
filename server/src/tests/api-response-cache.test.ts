@@ -3,8 +3,8 @@ process.env.ENABLE_API_CACHE_IN_TESTS = "true"
 
 import express, { type Express } from "express"
 import request from "supertest"
-import { apiResponseCache } from "../middleware/api-response-cache.middleware"
 import { _clearMemoryApiResponseCache } from "../lib/api-response-cache"
+import { apiResponseCache } from "../middleware/api-response-cache.middleware"
 
 describe("apiResponseCache middleware", () => {
 	beforeEach(() => {
@@ -75,4 +75,3 @@ describe("apiResponseCache middleware", () => {
 		expect(calls).toBe(2)
 	})
 })
-

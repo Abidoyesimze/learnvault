@@ -12,7 +12,10 @@ export default function SponsorLogosForTrack({
 }: SponsorLogosForTrackProps) {
 	const { data: sponsors = [], isLoading } = useTrackSponsorLogos(track)
 	const visibleSponsors = useMemo(
-		() => sponsors.filter((sponsor) => Boolean(sponsor.logo_url)).slice(0, compact ? 4 : 8),
+		() =>
+			sponsors
+				.filter((sponsor) => Boolean(sponsor.logo_url))
+				.slice(0, compact ? 4 : 8),
 		[sponsors, compact],
 	)
 

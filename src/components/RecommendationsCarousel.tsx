@@ -1,7 +1,9 @@
-import React, { useEffect, useState, useContext } from "react"
+import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { useWallet } from "../hooks/useWallet"
+import { createAuthHeaders } from "../lib/api"
 import CourseCard from "./CourseCard"
-import { WalletContext } from "../providers/WalletProvider"
+import { EmptyState } from "./states/emptyState"
 
 export interface Recommendation {
 	courseId: string
@@ -15,10 +17,17 @@ export interface Recommendation {
 	reason: string
 }
 
+function authHeaders(): Headers {
+	const headers = createAuthHeaders()
+	headers.set("Content-Type", "application/json")
+	return headers
+}
+
 const RecommendationsCarousel: React.FC = () => {
-	const { address } = useContext(WalletContext)
+	const { address } = useWallet()
 	const [recommendations, setRecommendations] = useState<Recommendation[]>([])
 	const [isLoading, setIsLoading] = useState(true)
+	const [error, setError] = useState<string | null>(null)
 	const navigate = useNavigate()
 
 	useEffect(() => {
@@ -27,26 +36,28 @@ const RecommendationsCarousel: React.FC = () => {
 		let mounted = true
 		const fetchRecommendations = async () => {
 			setIsLoading(true)
+			setError(null)
 			try {
-				const res = await fetch(\`/api/recommendations?limit=4\`, {
-					headers: { "Content-Type": "application/json" }
-				})
+				const res = await fetch(
+					`/api/recommendations/${encodeURIComponent(address)}?limit=4`,
+					{ headers: authHeaders() },
+				)
 				if (!res.ok) throw new Error("Failed to fetch recommendations")
 				const data = await res.json()
 				if (mounted && data?.data) {
 					setRecommendations(data.data)
-					
-					// Log view events
+
 					data.data.forEach((rec: Recommendation) => {
-						void fetch(\`/api/recommendations/engage\`, {
+						void fetch(`/api/recommendations/engage`, {
 							method: "POST",
-							headers: { "Content-Type": "application/json" },
+							headers: authHeaders(),
 							body: JSON.stringify({ courseSlug: rec.slug, action: "view" }),
 						}).catch(console.error)
 					})
 				}
-			} catch (error) {
-				console.error("Failed to fetch recommendations:", error)
+			} catch (err) {
+				console.error("Failed to fetch recommendations:", err)
+				if (mounted) setError("Unable to load recommendations right now.")
 			} finally {
 				if (mounted) setIsLoading(false)
 			}
@@ -60,26 +71,28 @@ const RecommendationsCarousel: React.FC = () => {
 	}, [address])
 
 	const handleEnrollClick = async (slug: string) => {
-		// Log click event
 		try {
-			await fetch(\`/api/recommendations/engage\`, {
+			await fetch(`/api/recommendations/engage`, {
 				method: "POST",
-				headers: { "Content-Type": "application/json" },
+				headers: authHeaders(),
 				body: JSON.stringify({ courseSlug: slug, action: "click" }),
 			})
-		} catch (error) {
-			console.error("Failed to log click:", error)
+		} catch (err) {
+			console.error("Failed to log click:", err)
 		}
-		
-		// Navigate to course page for enrollment
-		navigate(\`/courses/\${slug}\`)
+
+		void navigate(`/courses/${slug}`)
 	}
+
+	if (!address) return null
 
 	if (isLoading) {
 		return (
 			<section className="space-y-6" aria-label="Recommended courses">
 				<h2 className="text-xl sm:text-2xl md:text-3xl font-black flex items-center gap-3">
-					<span className="text-2xl sm:text-3xl" aria-hidden="true">🎯</span>
+					<span className="text-2xl sm:text-3xl" aria-hidden="true">
+						🎯
+					</span>
 					Recommended For You
 				</h2>
 				<div className="flex gap-4 overflow-x-auto pb-4 snap-x">
@@ -94,17 +107,54 @@ const RecommendationsCarousel: React.FC = () => {
 		)
 	}
 
-	if (recommendations.length === 0) return null
+	if (error) {
+		return (
+			<section className="space-y-6" aria-label="Recommended courses">
+				<h2 className="text-xl sm:text-2xl md:text-3xl font-black flex items-center gap-3">
+					<span className="text-2xl sm:text-3xl" aria-hidden="true">
+						🎯
+					</span>
+					Recommended For You
+				</h2>
+				<p className="text-sm text-white/50">{error}</p>
+			</section>
+		)
+	}
+
+	if (recommendations.length === 0) {
+		return (
+			<section className="space-y-6" aria-label="Recommended courses">
+				<h2 className="text-xl sm:text-2xl md:text-3xl font-black flex items-center gap-3">
+					<span className="text-2xl sm:text-3xl" aria-hidden="true">
+						🎯
+					</span>
+					Recommended For You
+				</h2>
+				<EmptyState
+					icon="🌱"
+					title="Start with a beginner track"
+					description="Once courses are published we'll suggest a beginner-friendly path to get you started."
+					ctaLabel="Browse all courses"
+					ctaTo="/courses"
+				/>
+			</section>
+		)
+	}
 
 	return (
 		<section className="space-y-6" aria-label="Recommended courses">
 			<h2 className="text-xl sm:text-2xl md:text-3xl font-black flex items-center gap-3">
-				<span className="text-2xl sm:text-3xl" aria-hidden="true">🎯</span>
+				<span className="text-2xl sm:text-3xl" aria-hidden="true">
+					🎯
+				</span>
 				Recommended For You
 			</h2>
 			<div className="flex gap-6 overflow-x-auto pb-6 snap-x hide-scrollbar">
 				{recommendations.map((course) => (
-					<div key={course.courseId} className="flex-none w-80 sm:w-96 snap-center flex flex-col relative group">
+					<div
+						key={course.courseId}
+						className="flex-none w-80 sm:w-96 snap-center flex flex-col relative group"
+					>
 						<CourseCard
 							id={course.slug}
 							title={course.title}

@@ -11,15 +11,18 @@
  * - Milestone submission form renders on milestone lessons
  */
 
-import { createElement, type ReactNode } from "react"
-import { MemoryRouter, Route, Routes } from "react-router-dom"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { screen, waitFor, fireEvent, act } from "@testing-library/react"
+import { createElement, type ReactNode } from "react"
+import { MemoryRouter, Route, Routes } from "react-router-dom"
 import { vi, describe, it, expect, beforeEach } from "vitest"
-import { render } from "../test/setup"
-import { WalletContext, type WalletContextType } from "../providers/WalletProvider"
 import { NotificationContext } from "../providers/NotificationProvider"
-import type { CourseDetail } from "../types/courses"
+import {
+	WalletContext,
+	type WalletContextType,
+} from "../providers/WalletProvider"
+import { render } from "../test/setup"
+import { type CourseDetail } from "../types/courses"
 
 // ---------------------------------------------------------------------------
 // Module-level mocks
@@ -51,7 +54,9 @@ vi.mock("../util/wallet", () => ({
 		openModal: vi.fn(),
 		setWallet: vi.fn(),
 		getAddress: vi.fn().mockResolvedValue({ address: undefined }),
-		getNetwork: vi.fn().mockResolvedValue({ network: "TESTNET", networkPassphrase: "" }),
+		getNetwork: vi
+			.fn()
+			.mockResolvedValue({ network: "TESTNET", networkPassphrase: "" }),
 		signTransaction: vi.fn().mockResolvedValue("signed-xdr"),
 		disconnect: vi.fn(),
 	},
@@ -81,8 +86,18 @@ const mockUseCourseDetail = vi.fn()
 
 vi.mock("../hooks/useCourses", () => ({
 	useCourseDetail: (id: string) => mockUseCourseDetail(id),
-	useCourses: () => ({ courses: [], isLoading: false, error: null, refetch: vi.fn() }),
-	useEnrolledCourses: () => ({ enrolledCourses: [], isLoading: false, error: null, refetch: vi.fn() }),
+	useCourses: () => ({
+		courses: [],
+		isLoading: false,
+		error: null,
+		refetch: vi.fn(),
+	}),
+	useEnrolledCourses: () => ({
+		enrolledCourses: [],
+		isLoading: false,
+		error: null,
+		refetch: vi.fn(),
+	}),
 }))
 
 // ---------------------------------------------------------------------------
@@ -111,6 +126,7 @@ const makeCourse = (overrides: Partial<CourseDetail> = {}): CourseDetail => ({
 			content: "# Getting Started\n\nWelcome to Stellar!",
 			order: 0,
 			isMilestone: false,
+			estimatedMinutes: 5,
 		},
 		{
 			id: 2,
@@ -119,6 +135,7 @@ const makeCourse = (overrides: Partial<CourseDetail> = {}): CourseDetail => ({
 			content: "# Accounts & Keys\n\nLearn about Stellar accounts.",
 			order: 1,
 			isMilestone: false,
+			estimatedMinutes: 10,
 		},
 		{
 			id: 3,
@@ -127,6 +144,7 @@ const makeCourse = (overrides: Partial<CourseDetail> = {}): CourseDetail => ({
 			content: "# Build Your First App\n\nTime to build!",
 			order: 2,
 			isMilestone: true,
+			estimatedMinutes: 30,
 		},
 	],
 	...overrides,
@@ -138,7 +156,9 @@ const makeCourse = (overrides: Partial<CourseDetail> = {}): CourseDetail => ({
 
 const MOCK_ADDRESS = "GTEST1234567890ABCDEFGHIJKLMN9876543210ZYXWVUTSRQPO"
 
-const makeWalletContext = (overrides: Partial<WalletContextType> = {}): WalletContextType => ({
+const makeWalletContext = (
+	overrides: Partial<WalletContextType> = {},
+): WalletContextType => ({
 	address: MOCK_ADDRESS,
 	balances: {},
 	isPending: false,
@@ -186,11 +206,7 @@ async function renderLessonView({
 			createElement(
 				WalletContext,
 				{ value: wallet },
-				createElement(
-					NotificationContext,
-					{ value: notification },
-					children,
-				),
+				createElement(NotificationContext, { value: notification }, children),
 			),
 		)
 
@@ -201,13 +217,10 @@ async function renderLessonView({
 			createElement(
 				Routes,
 				null,
-				createElement(
-					Route,
-					{
-						path: "/courses/:courseId/lessons/:lessonId",
-						element: createElement(LessonView),
-					},
-				),
+				createElement(Route, {
+					path: "/courses/:courseId/lessons/:lessonId",
+					element: createElement(LessonView),
+				}),
 			),
 		),
 		{ wrapper: Wrapper },
@@ -253,7 +266,9 @@ describe("LessonView", () => {
 			await renderLessonView({ lessonId: 1 })
 
 			await waitFor(() => {
-				expect(screen.getByRole("heading", { name: /Getting Started/i })).toBeInTheDocument()
+				expect(
+					screen.getByRole("heading", { name: /Getting Started/i }),
+				).toBeInTheDocument()
 			})
 		})
 
@@ -315,7 +330,10 @@ describe("LessonView", () => {
 		})
 
 		it("shows wallet-required screen when no wallet is connected", async () => {
-			await renderLessonView({ lessonId: 1, walletContext: { address: undefined } })
+			await renderLessonView({
+				lessonId: 1,
+				walletContext: { address: undefined },
+			})
 
 			await waitFor(() => {
 				expect(screen.getByText(/Wallet Required/i)).toBeInTheDocument()
@@ -334,7 +352,9 @@ describe("LessonView", () => {
 
 			await waitFor(() => {
 				expect(screen.getByText(/Lesson Locked/i)).toBeInTheDocument()
-				expect(screen.getByText(/complete the previous lesson/i)).toBeInTheDocument()
+				expect(
+					screen.getByText(/complete the previous lesson/i),
+				).toBeInTheDocument()
 			})
 		})
 	})
@@ -439,7 +459,9 @@ describe("LessonView", () => {
 			await waitFor(() => {
 				expect(screen.getAllByText("Getting Started").length).toBeGreaterThan(0)
 				expect(screen.getAllByText("Accounts & Keys").length).toBeGreaterThan(0)
-				expect(screen.getAllByText("Build Your First App").length).toBeGreaterThan(0)
+				expect(
+					screen.getAllByText("Build Your First App").length,
+				).toBeGreaterThan(0)
 			})
 		})
 
@@ -488,7 +510,9 @@ describe("LessonView", () => {
 
 			await waitFor(() => {
 				// The current lesson link has bg-brand-blue/20 class
-				const lessonLinks = screen.getAllByRole("link", { name: /Getting Started/i })
+				const lessonLinks = screen.getAllByRole("link", {
+					name: /Getting Started/i,
+				})
 				const sidebarLink = lessonLinks.find((link) =>
 					link.className.includes("bg-brand-blue"),
 				)
@@ -507,7 +531,9 @@ describe("LessonView", () => {
 
 			await waitFor(() => {
 				// "Getting Started" (lesson 1) should not have the active class
-				const lessonLinks = screen.getAllByRole("link", { name: /Getting Started/i })
+				const lessonLinks = screen.getAllByRole("link", {
+					name: /Getting Started/i,
+				})
 				const activeLink = lessonLinks.find((link) =>
 					link.className.includes("bg-brand-blue"),
 				)
@@ -539,9 +565,7 @@ describe("LessonView", () => {
 				).toBeInTheDocument()
 			})
 
-			await act(async () => {
-				fireEvent.click(screen.getByRole("button", { name: /Mark as Complete/i }))
-			})
+			fireEvent.click(screen.getByRole("button", { name: /Mark as Complete/i }))
 
 			expect(mockCompleteMilestone).toHaveBeenCalledWith("intro-stellar", 1)
 		})
@@ -605,7 +629,11 @@ describe("LessonView", () => {
 					createElement(
 						WalletContext,
 						{ value: wallet },
-						createElement(NotificationContext, { value: notification }, children),
+						createElement(
+							NotificationContext,
+							{ value: notification },
+							children,
+						),
 					),
 				)
 
@@ -696,9 +724,7 @@ describe("LessonView", () => {
 				).toBeInTheDocument()
 			})
 
-			await act(async () => {
-				fireEvent.click(screen.getByRole("button", { name: /Mark as Complete/i }))
-			})
+			fireEvent.click(screen.getByRole("button", { name: /Mark as Complete/i }))
 
 			expect(mockCompleteMilestone).toHaveBeenCalledWith(
 				"intro-stellar",
@@ -736,9 +762,7 @@ describe("LessonView", () => {
 			await renderLessonView({ lessonId: 3 })
 
 			await waitFor(() => {
-				expect(
-					screen.getByPlaceholderText(/github\.com/i),
-				).toBeInTheDocument()
+				expect(screen.getByPlaceholderText(/github\.com/i)).toBeInTheDocument()
 			})
 		})
 
@@ -795,17 +819,15 @@ describe("LessonView", () => {
 				expect(screen.getByPlaceholderText(/github\.com/i)).toBeInTheDocument()
 			})
 
-			await act(async () => {
-				fireEvent.change(screen.getByPlaceholderText(/github\.com/i), {
-					target: { value: "https://github.com/user/repo" },
-				})
+			fireEvent.change(screen.getByPlaceholderText(/github\.com/i), {
+				target: { value: "https://github.com/user/repo" },
 			})
 
-			await act(async () => {
-				fireEvent.submit(
-					screen.getByRole("button", { name: /Submit Milestone/i }).closest("form")!,
-				)
-			})
+			fireEvent.submit(
+				screen
+					.getByRole("button", { name: /Submit Milestone/i })
+					.closest("form")!,
+			)
 
 			expect(mockSubmitMilestone).toHaveBeenCalledWith(
 				"intro-stellar",
@@ -847,7 +869,11 @@ describe("LessonView", () => {
 					createElement(
 						WalletContext,
 						{ value: wallet },
-						createElement(NotificationContext, { value: notification }, children),
+						createElement(
+							NotificationContext,
+							{ value: notification },
+							children,
+						),
 					),
 				)
 

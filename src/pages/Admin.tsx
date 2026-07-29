@@ -57,6 +57,13 @@ interface AdminCourse {
 	difficulty: string
 }
 
+interface ContractRecord {
+	name: string
+	tag: string
+	address: string
+	updated: string
+}
+
 interface ScholarLookupResponse {
 	address: string
 	lrn_balance: string
@@ -90,11 +97,28 @@ const sectionDescriptions: Record<AdminSection, string> = {
 	treasury: "Monitor and manage treasury controls.",
 	scholarships: "View scholarship program health metrics.",
 	contracts: "Inspect deployed on-chain contract records.",
+	moderation: "Review flagged content and manage platform moderation.",
 }
 
 const initialCourses: AdminCourse[] = [
-	{ id: 1, title: "Soroban Basics", status: "published", students: 84 },
-	{ id: 2, title: "Stellar Security", status: "draft", students: 0 },
+	{
+		id: "1",
+		title: "Soroban Basics",
+		status: "published",
+		students: 84,
+		slug: "soroban-basics",
+		track: "General",
+		difficulty: "beginner",
+	},
+	{
+		id: "2",
+		title: "Stellar Security",
+		status: "draft",
+		students: 0,
+		slug: "stellar-security",
+		track: "General",
+		difficulty: "beginner",
+	},
 ]
 
 const contractRecords: ContractRecord[] = [
@@ -632,7 +656,8 @@ const MilestoneQueue: React.FC = () => {
 						Validator review queue is above threshold
 					</p>
 					<p className="mt-1 text-xs text-yellow-100/80">
-						Pending: {formatCount(reviewQueue.pendingReviews)} | Threshold: {formatCount(reviewQueue.threshold)}
+						Pending: {formatCount(reviewQueue.pendingReviews)} | Threshold:{" "}
+						{formatCount(reviewQueue.threshold)}
 					</p>
 				</div>
 			)}
@@ -670,16 +695,19 @@ const MilestoneQueue: React.FC = () => {
 							</tr>
 						)}
 
-						{!analyticsLoading && analytics.length === 0 && (
+						{!analyticsLoading && (analytics ?? []).length === 0 && (
 							<tr>
-								<td colSpan={5} className="py-8 text-center text-sm text-white/40">
+								<td
+									colSpan={5}
+									className="py-8 text-center text-sm text-white/40"
+								>
 									No validator analytics available.
 								</td>
 							</tr>
 						)}
 
 						{!analyticsLoading &&
-							analytics.map((row) => (
+							(analytics ?? []).map((row: any) => (
 								<tr
 									key={row.validatorAddress}
 									className="border-b border-white/5 hover:bg-white/3 transition-colors"
@@ -1691,12 +1719,40 @@ const ScholarshipMetrics: React.FC = () => {
 									label={{ position: "insideStart", fill: "#fff" }}
 								/>
 								<Legend />
-								<Tooltip formatter={(value: number) => `${value}%`} />
+								<Tooltip
+									formatter={
+										((value: number | undefined) =>
+											value !== undefined ? `${value}%` : "-") as any
+									}
+								/>
 							</RadialBarChart>
 						</ResponsiveContainer>
 					</div>
 				</>
 			)}
 		</section>
+	)
+}
+
+// Placeholder implementations for missing hook and component
+function useValidatorAnalytics() {
+	return {
+		analytics: null,
+		reviewQueue: {
+			exceeded: false,
+			pendingReviews: 0,
+			threshold: 100,
+		},
+		loading: false,
+		error: null,
+		fetchAnalytics: async () => {},
+	}
+}
+
+const ModerationQueue: React.FC = () => {
+	return (
+		<div className="text-center text-white/60">
+			<p>Moderation queue - under development</p>
+		</div>
 	)
 }

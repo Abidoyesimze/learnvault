@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { useCourses } from "../hooks/useCourses"
 import { useWikiPages } from "../hooks/useWiki"
+import { EmptyState as StateEmpty } from "./states/emptyState"
 
 const GlobalSearch: React.FC = () => {
 	const [query, setQuery] = useState("")
@@ -53,31 +54,33 @@ const GlobalSearch: React.FC = () => {
 	const results =
 		debouncedQuery.length >= 2
 			? [
-				...courses
-					.filter(
-						(c) =>
-							c.title.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
-							c.description.toLowerCase().includes(debouncedQuery.toLowerCase()),
-					)
-					.map((c) => ({
-						id: `course-${c.id}`,
-						title: c.title,
-						category: "Course",
-						link: `/courses`,
-					})),
-				...wikiPages
-					.filter(
-						(p) =>
-							p.title.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
-							p.content.toLowerCase().includes(debouncedQuery.toLowerCase()),
-					)
-					.map((p) => ({
-						id: `wiki-${p.id}`,
-						title: p.title,
-						category: "Wiki",
-						link: `/wiki/${p.slug}`,
-					})),
-			].slice(0, 8)
+					...courses
+						.filter(
+							(c) =>
+								c.title.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
+								c.description
+									.toLowerCase()
+									.includes(debouncedQuery.toLowerCase()),
+						)
+						.map((c) => ({
+							id: `course-${c.id}`,
+							title: c.title,
+							category: "Course",
+							link: `/courses`,
+						})),
+					...wikiPages
+						.filter(
+							(p) =>
+								p.title.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
+								p.content.toLowerCase().includes(debouncedQuery.toLowerCase()),
+						)
+						.map((p) => ({
+							id: `wiki-${p.id}`,
+							title: p.title,
+							category: "Wiki",
+							link: `/wiki/${p.slug}`,
+						})),
+				].slice(0, 8)
 			: []
 
 	// Reset active index whenever results change

@@ -1,10 +1,10 @@
 import { Button, Icon, Text, Modal, Profile } from "@stellar/design-system"
+import { motion } from "framer-motion"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { motion } from "framer-motion"
 import { Link } from "react-router-dom"
-import ConfirmDialog from "./ConfirmDialog"
 import { useWallet } from "../hooks/useWallet"
+import ConfirmDialog from "./ConfirmDialog"
 
 export const WalletButton = () => {
 	const [showDisconnectModal, setShowDisconnectModal] = useState(false)
@@ -80,17 +80,15 @@ export const WalletButton = () => {
 						{balances?.lrn?.balance ?? "0"} LRN
 					</span>
 				</div>
-				
+
 				<div className="w-9 h-9 rounded-xl overflow-hidden border border-white/10 shadow-2xl bg-slate-800 relative z-10">
-					<img 
-						src={`https://id.lobstr.co/${address}.png`} 
-						alt="Wallet Avatar" 
+					<img
+						src={`https://id.lobstr.co/${address}.png`}
+						alt="Wallet Avatar"
 						className="w-full h-full object-cover"
 					/>
 				</div>
 			</motion.button>
-
-
 		</div>
 	)
 }

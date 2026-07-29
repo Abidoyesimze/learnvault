@@ -38,6 +38,10 @@ export const buildOpenApiSpec = () => {
 				{ name: "Credentials", description: "Scholar credential endpoints" },
 				{ name: "Events", description: "Event stream endpoints" },
 				{ name: "Leaderboard", description: "Learner ranking endpoints" },
+				{
+					name: "Streaks",
+					description: "Learning streak and daily goal endpoints",
+				},
 				{ name: "Comments", description: "Proposal comment endpoints" },
 				{
 					name: "Treasury",
@@ -437,6 +441,24 @@ export const buildOpenApiSpec = () => {
 							"issued_at",
 							"metadata_uri",
 							"revoked",
+						],
+					},
+					CourseReview: {
+						type: "object",
+						properties: {
+							id: { type: "integer" },
+							course_id: { type: "string" },
+							learner_address: { type: "string" },
+							rating: { type: "integer", minimum: 1, maximum: 5 },
+							reviewText: { type: "string", nullable: true },
+							created_at: { type: "string", format: "date-time" },
+						},
+						required: [
+							"id",
+							"course_id",
+							"learner_address",
+							"rating",
+							"created_at",
 						],
 					},
 					CourseImportRow: {

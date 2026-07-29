@@ -1,6 +1,7 @@
 # Sentry Error Monitoring - Setup & Deployment Guide
 
-Complete guide for setting up centralized error monitoring with Sentry across the LearnVault backend (Express) and frontend (React).
+Complete guide for setting up centralized error monitoring with Sentry across
+the LearnVault backend (Express) and frontend (React).
 
 ---
 
@@ -24,11 +25,16 @@ Complete guide for setting up centralized error monitoring with Sentry across th
 
 This implementation provides:
 
-- **Backend (Express)**: Full error capture with request context, automatic performance tracing
-- **Frontend (React)**: Error boundary integration, automatic breadcrumb tracking, session replay
-- **PII Protection**: Automatic redaction of wallet addresses (`0x[a-fA-F0-9]{40}`) from all payloads
-- **Release Tracking**: Correlation of errors with git commit hashes for deployment tracking
-- **Environment Support**: Separate configurations for dev, staging, and production
+- **Backend (Express)**: Full error capture with request context, automatic
+  performance tracing
+- **Frontend (React)**: Error boundary integration, automatic breadcrumb
+  tracking, session replay
+- **PII Protection**: Automatic redaction of wallet addresses
+  (`0x[a-fA-F0-9]{40}`) from all payloads
+- **Release Tracking**: Correlation of errors with git commit hashes for
+  deployment tracking
+- **Environment Support**: Separate configurations for dev, staging, and
+  production
 
 ---
 
@@ -78,6 +84,7 @@ npm install
 ```
 
 Required packages:
+
 - `@sentry/node` - Core Node.js SDK
 - `@sentry/profiling-node` - Performance profiling
 
@@ -106,13 +113,13 @@ setSentryUser(userId, email, walletAddress)
 
 // Manual error capture with context
 try {
-  // ... risky operation
+	// ... risky operation
 } catch (error) {
-  captureError(error, {
-    level: "error",
-    tags: { feature: "milestone-approval" },
-    extra: { milestoneId, amount }
-  })
+	captureError(error, {
+		level: "error",
+		tags: { feature: "milestone-approval" },
+		extra: { milestoneId, amount },
+	})
 }
 ```
 
@@ -129,6 +136,7 @@ npm install
 ```
 
 Required packages:
+
 - `@sentry/react` - React integration
 - `@sentry/browser` - Browser utilities
 
@@ -154,10 +162,10 @@ setSentryUser(userId, email, walletAddress)
 
 // Manual error capture
 const handleError = (error: Error) => {
-  captureError(error, {
-    tags: { component: "MilestoneForm" },
-    extra: { formData }
-  })
+	captureError(error, {
+		tags: { component: "MilestoneForm" },
+		extra: { formData },
+	})
 }
 
 // Add breadcrumbs for context
@@ -212,11 +220,11 @@ SENTRY_PROFILES_SAMPLE_RATE=0.1
 
 ### Environment-Specific Settings
 
-| Environment | Traces Sample Rate | Replay Session Rate | Notes |
-|-------------|-------------------|---------------------|-------|
-| Development | 1.0 | 0.0 | Full tracing for debugging |
-| Staging | 0.5 | 0.1 | Moderate sampling |
-| Production | 0.1 | 0.1 | Low sampling to manage quota |
+| Environment | Traces Sample Rate | Replay Session Rate | Notes                        |
+| ----------- | ------------------ | ------------------- | ---------------------------- |
+| Development | 1.0                | 0.0                 | Full tracing for debugging   |
+| Staging     | 0.5                | 0.1                 | Moderate sampling            |
+| Production  | 0.1                | 0.1                 | Low sampling to manage quota |
 
 ---
 
@@ -316,13 +324,13 @@ const WALLET_ADDRESS_REGEX = /0x[a-fA-F0-9]{40}/g
 
 // Applied to all error events before sending to Sentry
 function scrubPII(event: Sentry.Event): Sentry.Event {
-  // Redacts from:
-  // - Exception messages
-  // - Stack trace variables
-  // - Breadcrumbs
-  // - Context data
-  // - User context (preserves ID, redacts wallet)
-  return event
+	// Redacts from:
+	// - Exception messages
+	// - Stack trace variables
+	// - Breadcrumbs
+	// - Context data
+	// - User context (preserves ID, redacts wallet)
+	return event
 }
 ```
 
@@ -367,13 +375,13 @@ ENV VITE_GIT_COMMIT_HASH=${VITE_GIT_COMMIT_HASH}
 
 Ensure these are set in your production environment:
 
-| Variable | Frontend | Backend | Required |
-|----------|----------|---------|----------|
-| `*_SENTRY_DSN` | ✅ | ✅ | Yes |
-| `*_SENTRY_ENVIRONMENT` | ✅ | ✅ | Yes |
-| `*_SENTRY_RELEASE` | ✅ | ✅ | Recommended |
-| `*_GIT_COMMIT_HASH` | ✅ | ✅ | Recommended |
-| `*_TRACES_SAMPLE_RATE` | ✅ | ✅ | Optional |
+| Variable               | Frontend | Backend | Required    |
+| ---------------------- | -------- | ------- | ----------- |
+| `*_SENTRY_DSN`         | ✅       | ✅      | Yes         |
+| `*_SENTRY_ENVIRONMENT` | ✅       | ✅      | Yes         |
+| `*_SENTRY_RELEASE`     | ✅       | ✅      | Recommended |
+| `*_GIT_COMMIT_HASH`    | ✅       | ✅      | Recommended |
+| `*_TRACES_SAMPLE_RATE` | ✅       | ✅      | Optional    |
 
 ---
 

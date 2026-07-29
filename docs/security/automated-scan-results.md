@@ -1,43 +1,43 @@
 # Automated Smart Contract Scan Results
 
-**Date:** 2026-04-25
-**Branch:** `591-security-audit-prep`
-**Scope:** Rust/Soroban contract workspace under `contracts/*`
+**Date:** 2026-04-25 **Branch:** `591-security-audit-prep` **Scope:**
+Rust/Soroban contract workspace under `contracts/*`
 
 ## Commands Run
 
-| Check | Command | Result |
-| --- | --- | --- |
-| Formatting | `rustfmt` via local Rust `1.89.0` toolchain over `contracts/**/*.rs` | Passed |
-| Tests | `cargo test --workspace` | Passed: 220 passed, 0 failed, 10 ignored |
-| Rust linting | `cargo clippy --workspace --all-targets` | Passed with non-blocking warnings in test code and existing mock/test layout |
-| Dependency audit | `cargo-audit audit --no-fetch --stale` | Passed with 0 vulnerabilities and 2 allowed warnings |
-| Soroban CLI lint/build | `stellar` CLI lookup | Not run: `stellar` CLI is not installed in this environment |
+| Check                  | Command                                                              | Result                                                                       |
+| ---------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Formatting             | `rustfmt` via local Rust `1.89.0` toolchain over `contracts/**/*.rs` | Passed                                                                       |
+| Tests                  | `cargo test --workspace`                                             | Passed: 220 passed, 0 failed, 10 ignored                                     |
+| Rust linting           | `cargo clippy --workspace --all-targets`                             | Passed with non-blocking warnings in test code and existing mock/test layout |
+| Dependency audit       | `cargo-audit audit --no-fetch --stale`                               | Passed with 0 vulnerabilities and 2 allowed warnings                         |
+| Soroban CLI lint/build | `stellar` CLI lookup                                                 | Not run: `stellar` CLI is not installed in this environment                  |
 
 The standard `cargo fmt` and default Rustup stable toolchain path attempted to
 sync the `stable` channel and failed in the sandbox. Formatting, tests, and
 Clippy were run by pinning `RUSTUP_TOOLCHAIN=1.89.0-x86_64-unknown-linux-gnu`
-and `RUSTC=/home/edoscoba/.rustup/toolchains/1.89.0-x86_64-unknown-linux-gnu/bin/rustc`.
+and
+`RUSTC=/home/edoscoba/.rustup/toolchains/1.89.0-x86_64-unknown-linux-gnu/bin/rustc`.
 
 ## Dependency Audit Remediation
 
 Initial `cargo-audit` output reported:
 
-| Advisory | Crate | Prior version | Action |
-| --- | --- | --- | --- |
-| `RUSTSEC-2026-0009` | `time` | `0.3.41` | Updated to `0.3.47` |
-| `RUSTSEC-2026-0097` | `rand` | `0.8.5`, `0.9.2` | Updated to `0.8.6`, `0.9.3` |
-| `RUSTSEC-2026-0012` | `keccak` | `0.1.5` | Updated to `0.1.6` |
+| Advisory            | Crate    | Prior version    | Action                      |
+| ------------------- | -------- | ---------------- | --------------------------- |
+| `RUSTSEC-2026-0009` | `time`   | `0.3.41`         | Updated to `0.3.47`         |
+| `RUSTSEC-2026-0097` | `rand`   | `0.8.5`, `0.9.2` | Updated to `0.8.6`, `0.9.3` |
+| `RUSTSEC-2026-0012` | `keccak` | `0.1.5`          | Updated to `0.1.6`          |
 
 After lockfile remediation, `cargo-audit audit --no-fetch --stale` exited
 successfully with no vulnerabilities.
 
 Remaining allowed warnings:
 
-| Advisory | Crate | Reason |
-| --- | --- | --- |
+| Advisory            | Crate              | Reason                                                                                            |
+| ------------------- | ------------------ | ------------------------------------------------------------------------------------------------- |
 | `RUSTSEC-2024-0388` | `derivative 2.2.0` | Unmaintained transitive dependency through `ark-*` crates used by Soroban host/test dependencies. |
-| `RUSTSEC-2024-0436` | `paste 1.0.15` | Unmaintained transitive dependency through `soroban-wasmi` / `ark-*` crates. |
+| `RUSTSEC-2024-0436` | `paste 1.0.15`     | Unmaintained transitive dependency through `soroban-wasmi` / `ark-*` crates.                      |
 
 ## Clippy Notes
 

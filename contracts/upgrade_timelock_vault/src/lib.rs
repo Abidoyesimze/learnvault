@@ -164,11 +164,14 @@ impl UpgradeTimelockVault {
         }
         admin.require_auth();
         let config = Config {
-<<<<<<< HEAD
-            admin,
+            admin: admin.clone(),
             timelock_duration: DEFAULT_TIMELOCK_DURATION,
         };
         env.storage().instance().set(&CONFIG_KEY, &config);
+        env.events().publish(
+            (symbol_short!("init"),),
+            (admin, DEFAULT_TIMELOCK_DURATION),
+        );
     }
 
     /// Initialize with a custom timelock duration. Admin only.
@@ -185,16 +188,6 @@ impl UpgradeTimelockVault {
             timelock_duration,
         };
         env.storage().instance().set(&CONFIG_KEY, &config);
-=======
-            admin: admin.clone(),
-            timelock_duration: DEFAULT_TIMELOCK_DURATION,
-        };
-        env.storage().instance().set(&CONFIG_KEY, &config);
-        env.events().publish(
-            (symbol_short!("init"),),
-            (admin, DEFAULT_TIMELOCK_DURATION),
-        );
->>>>>>> ac24631 (issue#528-resolved)
     }
 
     /// Set the timelock duration. Admin only.
@@ -204,10 +197,6 @@ impl UpgradeTimelockVault {
         if duration_seconds == 0 {
             panic_with_error!(&env, UpgradeTimelockError::InvalidTimelockDuration);
         }
-<<<<<<< HEAD
-        config.timelock_duration = duration_seconds;
-        env.storage().instance().set(&CONFIG_KEY, &config);
-=======
         let old_duration = config.timelock_duration;
         config.timelock_duration = duration_seconds;
         env.storage().instance().set(&CONFIG_KEY, &config);
@@ -215,7 +204,6 @@ impl UpgradeTimelockVault {
             (symbol_short!("tl_upd"),),
             (old_duration, duration_seconds, config.admin),
         );
->>>>>>> ac24631 (issue#528-resolved)
     }
 
     /// Get the current timelock duration.
@@ -256,12 +244,8 @@ impl UpgradeTimelockVault {
     /// The caller (governance contract) is responsible for performing the actual upgrade.
     /// Removes the proposal from storage after successful execution.
     pub fn execute_upgrade(env: Env, contract_address: Address) -> BytesN<32> {
-<<<<<<< HEAD
         let config = Self::get_config(&env);
         config.admin.require_auth();
-=======
-        Self::get_config(&env).admin.require_auth();
->>>>>>> ac24631 (issue#528-resolved)
         let key = DataKey::UpgradeProposal(contract_address.clone());
         let proposal: UpgradeProposal = env
             .storage()
@@ -272,11 +256,7 @@ impl UpgradeTimelockVault {
         let current_time = env.ledger().timestamp();
         let ready_at = proposal
             .queued_at
-<<<<<<< HEAD
             .checked_add(config.timelock_duration)
-=======
-            .checked_add(Self::get_config(&env).timelock_duration)
->>>>>>> ac24631 (issue#528-resolved)
             .unwrap_or_else(|| panic_with_error!(&env, UpgradeTimelockError::ArithmeticOverflow));
         if current_time < ready_at {
             panic_with_error!(&env, UpgradeTimelockError::TimelockNotExpired);

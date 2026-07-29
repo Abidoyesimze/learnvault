@@ -93,7 +93,7 @@ describe("useAdmin hooks", () => {
 
 		it("approves a milestone and refreshes the list", async () => {
 			vi.mocked(api.apiFetchJson).mockResolvedValue({}) // Success for approve
-			
+
 			const { result } = renderHook(() => useAdminMilestones())
 
 			let success = false

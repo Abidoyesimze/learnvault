@@ -11,15 +11,33 @@ jest.mock("../db/index", () => ({
 import express from "express"
 import request from "supertest"
 import { pool } from "../db/index"
-import { enrollmentsRouter } from "../routes/enrollments.routes"
 import { errorHandler } from "../middleware/error.middleware"
+import { createEnrollmentsRouter } from "../routes/enrollments.routes"
+import { type JwtService } from "../services/jwt.service"
 
 const mockedQuery = pool.query as jest.Mock
+
+const mockJwtService: JwtService = {
+	signWalletToken: () => "mock-token",
+	signRefreshToken: () => "mock-refresh-token",
+	issueTokenPair: () => ({
+		accessToken: "mock-token",
+		refreshToken: "mock-refresh-token",
+	}),
+	verifyWalletToken: async () => ({ sub: "mock-address", jti: "mock-jti" }),
+	verifyRefreshToken: async () => ({ sub: "mock-address", jti: "mock-jti" }),
+	rotateRefreshToken: async () => ({
+		accessToken: "mock-token",
+		refreshToken: "mock-refresh-token",
+		sub: "mock-address",
+	}),
+	revokeToken: async () => {},
+}
 
 function buildApp() {
 	const app = express()
 	app.use(express.json())
-	app.use("/api", enrollmentsRouter)
+	app.use("/api", createEnrollmentsRouter(mockJwtService))
 	app.use(errorHandler)
 	return app
 }
@@ -43,13 +61,11 @@ describe("POST /api/enrollments", () => {
 			rowCount: 1,
 		})
 
-		const res = await request(buildApp())
-			.post("/api/enrollments")
-			.send({
-				learner_address: "GABC",
-				course_id: "stellar-basics",
-				tx_hash: "hash123",
-			})
+		const res = await request(buildApp()).post("/api/enrollments").send({
+			learner_address: "GABC",
+			course_id: "stellar-basics",
+			tx_hash: "hash123",
+		})
 
 		expect(res.status).toBe(409)
 		expect(res.body.error).toBe("Already enrolled in this course")
@@ -61,12 +77,25 @@ describe("POST /api/enrollments", () => {
 			.mockResolvedValueOnce({ rows: [], rowCount: 0 })
 			// 2. select course prerequisites -> has course with prereq ID [2]
 			.mockResolvedValueOnce({
-				rows: [{ id: 1, slug: "stellar-basics", title: "Stellar Basics", prerequisites: [2] }],
+				rows: [
+					{
+						id: 1,
+						slug: "stellar-basics",
+						title: "Stellar Basics",
+						prerequisites: [2],
+					},
+				],
 				rowCount: 1,
 			})
 			// 3. select details of prerequisite 2
 			.mockResolvedValueOnce({
-				rows: [{ id: 2, slug: "soroban-fundamentals", title: "Soroban Fundamentals" }],
+				rows: [
+					{
+						id: 2,
+						slug: "soroban-fundamentals",
+						title: "Soroban Fundamentals",
+					},
+				],
 				rowCount: 1,
 			})
 			// 4. select completed non-revoked credentials -> empty (learner has not completed it)
@@ -75,13 +104,11 @@ describe("POST /api/enrollments", () => {
 				rowCount: 0,
 			})
 
-		const res = await request(buildApp())
-			.post("/api/enrollments")
-			.send({
-				learner_address: "GABC",
-				course_id: "stellar-basics",
-				tx_hash: "hash123",
-			})
+		const res = await request(buildApp()).post("/api/enrollments").send({
+			learner_address: "GABC",
+			course_id: "stellar-basics",
+			tx_hash: "hash123",
+		})
 
 		expect(res.status).toBe(409)
 		expect(res.body.error).toBe("Prerequisites not met")
@@ -96,12 +123,25 @@ describe("POST /api/enrollments", () => {
 			.mockResolvedValueOnce({ rows: [], rowCount: 0 })
 			// 2. select course prerequisites -> has course with prereq ID [2]
 			.mockResolvedValueOnce({
-				rows: [{ id: 1, slug: "stellar-basics", title: "Stellar Basics", prerequisites: [2] }],
+				rows: [
+					{
+						id: 1,
+						slug: "stellar-basics",
+						title: "Stellar Basics",
+						prerequisites: [2],
+					},
+				],
 				rowCount: 1,
 			})
 			// 3. select details of prerequisite 2
 			.mockResolvedValueOnce({
-				rows: [{ id: 2, slug: "soroban-fundamentals", title: "Soroban Fundamentals" }],
+				rows: [
+					{
+						id: 2,
+						slug: "soroban-fundamentals",
+						title: "Soroban Fundamentals",
+					},
+				],
 				rowCount: 1,
 			})
 			// 4. select completed credentials -> returns "soroban-fundamentals" as completed
@@ -116,17 +156,17 @@ describe("POST /api/enrollments", () => {
 			})
 			// 6. insert enrollment -> returns enrollment info
 			.mockResolvedValueOnce({
-				rows: [{ id: 100, enrolled_at: "2026-01-01T00:00:00Z", content_version: 1 }],
+				rows: [
+					{ id: 100, enrolled_at: "2026-01-01T00:00:00Z", content_version: 1 },
+				],
 				rowCount: 1,
 			})
 
-		const res = await request(buildApp())
-			.post("/api/enrollments")
-			.send({
-				learner_address: "GABC",
-				course_id: "stellar-basics",
-				tx_hash: "hash123",
-			})
+		const res = await request(buildApp()).post("/api/enrollments").send({
+			learner_address: "GABC",
+			course_id: "stellar-basics",
+			tx_hash: "hash123",
+		})
 
 		expect(res.status).toBe(201)
 		expect(res.body.enrollment_id).toBe(100)
