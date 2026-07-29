@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react"
 import { Helmet } from "react-helmet"
 import { useSearchParams } from "react-router-dom"
 import CommentSection from "../components/CommentSection"
+import { CoFundingSection } from "../components/CoFundingSection"
 import ConfirmDialog from "../components/ConfirmDialog"
 import Pagination from "../components/Pagination"
 import { NoProposalsEmptyState } from "../components/SkeletonLoader"
@@ -673,6 +674,8 @@ const DaoProposals: React.FC = () => {
 							)}
 						</div>
 					</div>
+
+					<CoFundingSection proposal={selectedProposal} />
 
 					<CommentSection
 						proposalId={String(selectedProposal.id)}

@@ -3,9 +3,11 @@ import { Router } from "express"
 import {
 	applyForScholarship,
 	contributeToScholarship,
+	getProposalContributors,
 	getScholarshipMetrics,
 } from "../controllers/scholarships.controller"
-import { scholarshipApplyLimiter } from "../middleware/rate-limit.middleware"
+import { authMiddleware } from "../middleware/auth.middleware"
+import { scholarshipApplyLimiter, writeLimiter } from "../middleware/rate-limit.middleware"
 
 export const scholarshipsRouter = Router()
 
@@ -100,3 +102,95 @@ scholarshipsRouter.post(
 		void applyForScholarship(req, res)
 	},
 )
+
+/**
+ * @openapi
+ * /api/scholarships/{id}/contribute:
+ *   post:
+ *     tags: [Scholarships]
+ *     summary: Co-fund an approved scholarship proposal
+ *     description: |
+ *       Records a verified on-chain USDC deposit against an approved or queued
+ *       proposal. The Stellar transaction is confirmed via Horizon before any
+ *       database write occurs.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Proposal ID to co-fund
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [donor_address, amount, tx_hash]
+ *             properties:
+ *               donor_address:
+ *                 type: string
+ *                 description: Stellar G-address of the donor (must match JWT)
+ *               amount:
+ *                 type: number
+ *                 description: USDC amount contributed
+ *               tx_hash:
+ *                 type: string
+ *                 description: 64-character hex hash of the on-chain deposit transaction
+ *     responses:
+ *       200:
+ *         description: Contribution recorded
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 current_funding:
+ *                   type: number
+ *                 fully_funded:
+ *                   type: boolean
+ *       400:
+ *         $ref: '#/components/responses/BadRequestError'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ *       409:
+ *         description: Transaction already recorded or proposal not co-fundable
+ *       422:
+ *         description: On-chain verification failed
+ */
+scholarshipsRouter.post(
+	"/scholarships/:id/contribute",
+	authMiddleware,
+	writeLimiter,
+	(req, res) => {
+		void contributeToScholarship(req, res)
+	},
+)
+
+/**
+ * @openapi
+ * /api/scholarships/{id}/contributors:
+ *   get:
+ *     tags: [Scholarships]
+ *     summary: List verified contributors for a proposal
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Contributor list with funding totals
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ */
+scholarshipsRouter.get("/scholarships/:id/contributors", (req, res) => {
+	void getProposalContributors(req, res)
+})
