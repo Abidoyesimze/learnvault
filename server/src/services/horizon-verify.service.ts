@@ -18,7 +18,7 @@ const SCHOLARSHIP_TREASURY_CONTRACT_ID =
 	process.env.SCHOLARSHIP_TREASURY_CONTRACT_ID ?? ""
 
 const USDC_DECIMALS = 7
-const AMOUNT_TOLERANCE_ATOMIC = 1n // 1 stroop — covers rounding in unit conversion
+const AMOUNT_TOLERANCE_ATOMIC = 1n
 
 function getHorizonBaseUrl(): string {
 	return STELLAR_NETWORK === "mainnet"
@@ -27,58 +27,18 @@ function getHorizonBaseUrl(): string {
 }
 
 /**
- * Converts a USDC amount (human-readable, up to 7 decimal places) to
- * atomic/stroop units as a BigInt.
+ * Converts a USDC amount (up to 7 decimal places) to atomic stroop units.
+ * Avoids floating-point imprecision by using string-based arithmetic.
  *
- * "100"    → 1_000_000_000n
- * "100.5"  → 1_005_000_000n
+ * "100"   → 1_000_000_000n
+ * "100.5" → 1_005_000_000n
  */
 function usdcToAtomic(amountUsdc: number): bigint {
 	const str = amountUsdc.toFixed(USDC_DECIMALS)
-	const dotIndex = str.indexOf(".")
-	const whole = str.slice(0, dotIndex)
-	const frac = str.slice(dotIndex + 1).padEnd(USDC_DECIMALS, "0")
+	const dot = str.indexOf(".")
+	const whole = str.slice(0, dot)
+	const frac = str.slice(dot + 1).padEnd(USDC_DECIMALS, "0")
 	return BigInt(whole) * 10_000_000n + BigInt(frac)
-}
-
-/**
- * Decodes a Stellar account ScAddress to its G-prefixed strkey.
- * Works only for account-type addresses (donor wallets).
- */
-function decodeAccountAddress(
-	addr: import("@stellar/stellar-sdk").xdr.ScAddress,
-	StrKey: typeof import("@stellar/stellar-sdk").StrKey,
-): string | null {
-	if (addr.switch().name !== "scAddressTypeAccount") return null
-	// SDK returns a Hash (Opaque[]) — Buffer.from normalises it for StrKey
-	const rawKey = Buffer.from(addr.accountId().ed25519())
-	return StrKey.encodeEd25519PublicKey(rawKey)
-}
-
-/**
- * Decodes a Stellar contract ScAddress to its C-prefixed strkey.
- */
-function decodeContractAddress(
-	addr: import("@stellar/stellar-sdk").xdr.ScAddress,
-	StrKey: typeof import("@stellar/stellar-sdk").StrKey,
-): string | null {
-	if (addr.switch().name !== "scAddressTypeContract") return null
-	return StrKey.encodeContract(Buffer.from(addr.contractId()))
-}
-
-/**
- * Decodes a signed 128-bit integer ScVal to a positive BigInt.
- * For USDC deposit amounts, the value is always non-negative.
- */
-function decodeI128(
-	val: import("@stellar/stellar-sdk").xdr.ScVal,
-): bigint | null {
-	if (val.switch().name !== "scvI128") return null
-	const i128 = val.i128()
-	const hi = BigInt(i128.hi().toString())
-	const lo = BigInt(i128.lo().toString())
-	// Combine high and low 64-bit parts; for positive amounts hi === 0n
-	return (hi << 64n) | lo
 }
 
 interface HorizonTxRecord {
@@ -86,10 +46,6 @@ interface HorizonTxRecord {
 	successful: boolean
 }
 
-/**
- * Fetches a transaction record from Horizon by hash.
- * Throws on network errors or when the transaction is not found / not successful.
- */
 async function fetchHorizonTx(txHash: string): Promise<HorizonTxRecord> {
 	const url = `${getHorizonBaseUrl()}/transactions/${encodeURIComponent(txHash)}`
 	const response = await fetch(url)
@@ -115,7 +71,7 @@ async function fetchHorizonTx(txHash: string): Promise<HorizonTxRecord> {
  * `expectedAmountUsdc` USDC.
  *
  * Returns `true` when a matching operation is found, `false` otherwise.
- * Throws only on network / configuration errors (not on mis-match).
+ * Throws only on network / configuration errors, not on mismatches.
  */
 export async function verifyDepositTx(
 	txHash: string,
@@ -128,12 +84,13 @@ export async function verifyDepositTx(
 		)
 	}
 
-	const { xdr, StrKey } = await import("@stellar/stellar-sdk")
+	// Dynamic import keeps the heavy SDK out of the module's startup cost
+	const { xdr, Address, scValToNative } = await import("@stellar/stellar-sdk")
 
 	const record = await fetchHorizonTx(txHash)
 	const envelope = xdr.TransactionEnvelope.fromXDR(record.envelope_xdr, "base64")
 
-	// Soroban transactions always use v1 envelopes
+	// Soroban transactions always use the v1 (FeeBump-capable) envelope
 	if (envelope.switch().name !== "envelopeTypeTx") {
 		log.warn({ txHash }, "Unexpected envelope type — not a v1 transaction")
 		return false
@@ -145,43 +102,58 @@ export async function verifyDepositTx(
 	for (const op of ops) {
 		const body = op.body()
 
-		// Only care about Soroban host function invocations
+		// Filter: only Soroban host-function invocations
 		if (body.switch().name !== "invokeHostFunction") continue
 
-		// SDK v14 types the union accessor as static-only; cast through unknown to call
-		// the instance method that XDR generates at runtime.
-		const ihfOp = (body as unknown as { invokeHostFunction(): { hostFunction(): import("@stellar/stellar-sdk").xdr.HostFunction } }).invokeHostFunction()
+		// The TypeScript types for OperationBody mark `invokeHostFunction` as a
+		// static factory only. The instance accessor is generated at runtime by
+		// stellar-base's XDR library but not reflected in the d.ts — cast to reach it.
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const ihfOp = (body as any).invokeHostFunction() as {
+			hostFunction(): import("@stellar/stellar-sdk").xdr.HostFunction
+		}
 		const hf = ihfOp.hostFunction()
 		if (hf.switch().name !== "hostFunctionTypeInvokeContract") continue
 
 		const invokeArgs = hf.invokeContract()
 
-		// 1. Contract address must be the scholarship treasury
-		const contractStrkey = decodeContractAddress(
-			invokeArgs.contractAddress(),
-			StrKey,
-		)
+		// 1. Verify the target contract is the ScholarshipTreasury
+		// Address.fromScAddress handles the Hash → strkey conversion internally,
+		// avoiding the Opaque[]/Buffer incompatibility in the raw XDR types.
+		let contractStrkey: string
+		try {
+			contractStrkey = Address.fromScAddress(invokeArgs.contractAddress()).toString()
+		} catch {
+			continue
+		}
 		if (contractStrkey !== SCHOLARSHIP_TREASURY_CONTRACT_ID) continue
 
-		// 2. Function name must be "deposit"
+		// 2. Verify the function name
 		if (invokeArgs.functionName().toString() !== "deposit") continue
 
 		const args = invokeArgs.args()
-		// deposit(donor: Address, amount: i128, asset: Address) — needs at least 2 args
+		// deposit(donor: Address, amount: i128, asset: Address) needs at least 2 args
 		if (args.length < 2) continue
 
-		// 3. arg[0]: donor address must match
-		const donorAddress = decodeAccountAddress(args[0].address(), StrKey)
-		if (donorAddress !== expectedDonor) continue
+		// 3. Verify the donor address
+		// Address.fromScVal decodes scvAddress ScVals without touching raw bytes
+		let donorStrkey: string
+		try {
+			donorStrkey = Address.fromScVal(args[0]).toString()
+		} catch {
+			continue
+		}
+		if (donorStrkey !== expectedDonor) continue
 
-		// 4. arg[1]: amount must match within tolerance
-		const onChainAtomic = decodeI128(args[1])
-		if (onChainAtomic === null) continue
+		// 4. Verify the amount
+		// scValToNative returns a bigint for scvI128 in SDK v14
+		const amountNative = scValToNative(args[1])
+		if (typeof amountNative !== "bigint") continue
 
 		const diff =
-			onChainAtomic >= expectedAtomic
-				? onChainAtomic - expectedAtomic
-				: expectedAtomic - onChainAtomic
+			amountNative >= expectedAtomic
+				? amountNative - expectedAtomic
+				: expectedAtomic - amountNative
 
 		if (diff > AMOUNT_TOLERANCE_ATOMIC) continue
 
