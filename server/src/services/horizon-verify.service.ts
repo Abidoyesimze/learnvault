@@ -50,7 +50,8 @@ function decodeAccountAddress(
 	StrKey: typeof import("@stellar/stellar-sdk").StrKey,
 ): string | null {
 	if (addr.switch().name !== "scAddressTypeAccount") return null
-	const rawKey = addr.accountId().ed25519()
+	// SDK returns a Hash (Opaque[]) — Buffer.from normalises it for StrKey
+	const rawKey = Buffer.from(addr.accountId().ed25519())
 	return StrKey.encodeEd25519PublicKey(rawKey)
 }
 
@@ -62,7 +63,7 @@ function decodeContractAddress(
 	StrKey: typeof import("@stellar/stellar-sdk").StrKey,
 ): string | null {
 	if (addr.switch().name !== "scAddressTypeContract") return null
-	return StrKey.encodeContract(addr.contractId())
+	return StrKey.encodeContract(Buffer.from(addr.contractId()))
 }
 
 /**
@@ -147,7 +148,10 @@ export async function verifyDepositTx(
 		// Only care about Soroban host function invocations
 		if (body.switch().name !== "invokeHostFunction") continue
 
-		const hf = body.invokeHostFunction().hostFunction()
+		// SDK v14 types the union accessor as static-only; cast through unknown to call
+		// the instance method that XDR generates at runtime.
+		const ihfOp = (body as unknown as { invokeHostFunction(): { hostFunction(): import("@stellar/stellar-sdk").xdr.HostFunction } }).invokeHostFunction()
+		const hf = ihfOp.hostFunction()
 		if (hf.switch().name !== "hostFunctionTypeInvokeContract") continue
 
 		const invokeArgs = hf.invokeContract()

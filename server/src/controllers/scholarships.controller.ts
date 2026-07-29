@@ -3,10 +3,11 @@ import { z } from "zod"
 
 import { pool } from "../db/index"
 import { logger } from "../lib/logger"
+import { type AuthRequest } from "../middleware/auth.middleware"
 import { trackEscrowTimeout } from "../services/escrow-timeout.service"
+import { stellarContractService } from "../services/stellar-contract.service"
 
 const log = logger.child({ module: "scholarships" })
-import { stellarContractService } from "../services/stellar-contract.service"
 
 const applySchema = z.object({
 	applicant_address: z.string().min(50).max(56),
@@ -194,5 +195,186 @@ export async function getScholarshipMetrics(
 	} catch (err) {
 		console.error("[scholarships] getScholarshipMetrics error:", err)
 		res.status(500).json({ error: "Failed to fetch scholarship metrics" })
+	}
+}
+
+const contributeSchema = z.object({
+	donor_address: z
+		.string()
+		.min(56)
+		.max(56)
+		.startsWith("G", "Must be a valid Stellar address"),
+	amount: z.number().positive("Amount must be positive"),
+	tx_hash: z
+		.string()
+		.length(64, "tx_hash must be a 64-character hex string")
+		.regex(/^[a-f0-9]{64}$/i, "tx_hash must be a valid hex hash"),
+})
+
+export async function contributeToScholarship(
+	req: Request,
+	res: Response,
+): Promise<void> {
+	// proposal_id comes from the URL parameter
+	const proposalId = Number.parseInt(req.params.id, 10)
+	if (Number.isNaN(proposalId) || proposalId < 1) {
+		res.status(400).json({ error: "Invalid proposal id" })
+		return
+	}
+
+	const validation = contributeSchema.safeParse(req.body)
+	if (!validation.success) {
+		res.status(400).json({
+			error: "Invalid contribution data",
+			details: validation.error.flatten().fieldErrors,
+		})
+		return
+	}
+
+	const { donor_address, amount, tx_hash } = validation.data
+
+	// The authenticated wallet must be the donor — prevents spoofed donor_address
+	const authenticatedAddress = (req as AuthRequest).user?.address
+	if (!authenticatedAddress || authenticatedAddress !== donor_address) {
+		res.status(403).json({
+			error: "donor_address must match the authenticated wallet",
+		})
+		return
+	}
+
+	try {
+		// 1. Confirm the proposal exists and accepts co-funding
+		const proposalResult = await pool.query(
+			"SELECT id, status, amount, current_funding FROM proposals WHERE id = $1",
+			[proposalId],
+		)
+
+		if (proposalResult.rows.length === 0) {
+			res.status(404).json({ error: "Proposal not found" })
+			return
+		}
+
+		const proposal = proposalResult.rows[0]
+		if (proposal.status !== "queued" && proposal.status !== "approved") {
+			res.status(409).json({
+				error: "Co-funding is only available for approved or queued proposals",
+			})
+			return
+		}
+
+		// 2. Verify the on-chain transaction before touching the DB
+		const { verifyDepositTx } = await import("../services/horizon-verify.service")
+		const isVerified = await verifyDepositTx(tx_hash, amount, donor_address)
+		if (!isVerified) {
+			res.status(422).json({
+				error: "Transaction verification failed — could not confirm deposit on Stellar",
+			})
+			return
+		}
+
+		// 3. Atomic write: record contribution + update funding in one transaction
+		const client = await pool.connect()
+		try {
+			await client.query("BEGIN")
+
+			await client.query(
+				`INSERT INTO scholarship_contributions
+					(proposal_id, donor_address, amount, tx_hash, verified)
+				 VALUES ($1, $2, $3, $4, true)`,
+				[proposalId, donor_address, amount, tx_hash],
+			)
+
+			const updateResult = await client.query(
+				`UPDATE proposals
+				 SET current_funding = current_funding + $1
+				 WHERE id = $2
+				 RETURNING current_funding, amount`,
+				[amount, proposalId],
+			)
+
+			const { current_funding, amount: target_amount } = updateResult.rows[0]
+			const fullyFunded =
+				parseFloat(current_funding) >= parseFloat(target_amount)
+
+			if (fullyFunded) {
+				await client.query(
+					"UPDATE proposals SET status = 'funded' WHERE id = $1",
+					[proposalId],
+				)
+			}
+
+			await client.query("COMMIT")
+
+			res.status(200).json({
+				current_funding: parseFloat(current_funding),
+				fully_funded: fullyFunded,
+			})
+		} catch (err) {
+			await client.query("ROLLBACK")
+			throw err
+		} finally {
+			client.release()
+		}
+	} catch (err) {
+		log.error({ err }, "Contribution failed")
+		// Duplicate tx_hash is a 409 — the contribution was already recorded
+		if (
+			err instanceof Error &&
+			err.message.includes("scholarship_contributions_tx_hash_key")
+		) {
+			res.status(409).json({ error: "This transaction has already been recorded" })
+			return
+		}
+		res.status(500).json({ error: "Failed to record contribution" })
+	}
+}
+
+export async function getProposalContributors(
+	req: Request,
+	res: Response,
+): Promise<void> {
+	const proposalId = Number.parseInt(req.params.id, 10)
+	if (Number.isNaN(proposalId) || proposalId < 1) {
+		res.status(400).json({ error: "Invalid proposal id" })
+		return
+	}
+
+	try {
+		// Confirm the proposal exists before returning an empty list
+		const exists = await pool.query(
+			"SELECT id, current_funding, amount FROM proposals WHERE id = $1",
+			[proposalId],
+		)
+		if (exists.rows.length === 0) {
+			res.status(404).json({ error: "Proposal not found" })
+			return
+		}
+
+		const result = await pool.query(
+			`SELECT donor_address, amount, tx_hash, created_at
+			 FROM scholarship_contributions
+			 WHERE proposal_id = $1
+			   AND verified = true
+			 ORDER BY created_at DESC
+			 LIMIT 50`,
+			[proposalId],
+		)
+
+		const { current_funding, amount: target_amount } = exists.rows[0]
+
+		res.status(200).json({
+			proposal_id: proposalId,
+			current_funding: parseFloat(current_funding ?? "0"),
+			target_amount: parseFloat(target_amount ?? "0"),
+			contributors: result.rows.map((row) => ({
+				donor_address: row.donor_address as string,
+				amount: parseFloat(row.amount as string),
+				tx_hash: row.tx_hash as string,
+				created_at: row.created_at as string,
+			})),
+		})
+	} catch (err) {
+		log.error({ err }, "getProposalContributors failed")
+		res.status(500).json({ error: "Failed to fetch contributors" })
 	}
 }
