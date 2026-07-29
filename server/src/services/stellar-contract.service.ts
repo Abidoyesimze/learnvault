@@ -324,7 +324,7 @@ async function ensureAdminRole(): Promise<void> {
 		Networks,
 		BASE_FEE,
 		rpc,
-		scValToNative,
+		scValToNative: scValToNativeFn,
 	} = await import("@stellar/stellar-sdk")
 
 	const keypair = Keypair.fromSecret(STELLAR_SECRET_KEY)
@@ -370,8 +370,8 @@ async function ensureAdminRole(): Promise<void> {
 		throw new Error("Contract admin() returned no value.")
 	}
 
-	// 3. Update the Cache
-	cachedAdminAddress = scValToNative(simResult.result.retval) as string
+		// 3. Update the Cache
+		cachedAdminAddress = scValToNativeFn((simResult as any).result.retval) as string
 	lastAdminCheckTime = Date.now()
 
 	// 4. Verify Authorization
@@ -690,8 +690,8 @@ async function isEnrolled(
 			}
 
 			if (simResult.result) {
-				const { scValToNative } = await import("@stellar/stellar-sdk")
-				const result = scValToNative(simResult.result.retval) as boolean
+				const { scValToNative: scValToNativeFn } = await import("@stellar/stellar-sdk")
+				const result = scValToNativeFn((simResult as any).result.retval) as boolean
 				await cache.set(cacheKey, result ? "1" : "0", TTL.ENROLLMENT)
 				return result
 			}
@@ -1042,8 +1042,8 @@ async function getLearnTokenBalance(address: string): Promise<string> {
 				.build()
 			const simResult = await server.simulateTransaction(tx)
 			if (rpc.Api.isSimulationError(simResult)) return "0"
-			const { scValToNative } = await import("@stellar/stellar-sdk")
-			const result = scValToNative(simResult.result?.retval!).toString()
+			const { scValToNative: scValToNativeFn } = await import("@stellar/stellar-sdk")
+			const result = scValToNativeFn((simResult as any).result?.retval!).toString()
 			await cache.set(cacheKey, result, TTL.BALANCE)
 			return result
 		})
@@ -1089,8 +1089,8 @@ async function getGovernanceTokenBalance(address: string): Promise<string> {
 				.build()
 			const simResult = await server.simulateTransaction(tx)
 			if (rpc.Api.isSimulationError(simResult)) return "0"
-			const { scValToNative } = await import("@stellar/stellar-sdk")
-			const result = scValToNative(simResult.result?.retval!).toString()
+			const { scValToNative: scValToNativeFn } = await import("@stellar/stellar-sdk")
+			const result = scValToNativeFn((simResult as any).result?.retval!).toString()
 			await cache.set(cacheKey, result, TTL.BALANCE)
 			return result
 		})
@@ -1140,8 +1140,8 @@ async function getGovernanceVotingPower(address: string): Promise<string> {
 				.build()
 			const simResult = await server.simulateTransaction(tx)
 			if (rpc.Api.isSimulationError(simResult)) return "0"
-			const { scValToNative } = await import("@stellar/stellar-sdk")
-			const result = scValToNative(simResult.result?.retval!).toString()
+			const { scValToNative: scValToNativeFn } = await import("@stellar/stellar-sdk")
+			const result = scValToNativeFn((simResult as any).result?.retval!).toString()
 			await cache.set(cacheKey, result, TTL.VOTING_POWER)
 			return result
 		})
@@ -1188,8 +1188,8 @@ async function getGovernanceDelegation(
 				.build()
 			const simResult = await server.simulateTransaction(tx)
 			if (rpc.Api.isSimulationError(simResult)) return null
-			const { scValToNative } = await import("@stellar/stellar-sdk")
-			const raw = scValToNative(simResult.result?.retval!)
+			const { scValToNative: scValToNativeFn } = await import("@stellar/stellar-sdk")
+			const raw = scValToNativeFn((simResult as any).result?.retval!)
 			// Option<Address> → null (None) or an Address string (Some)
 			const result = typeof raw === "string" ? raw : null
 			await cache.set(cacheKey, result ?? "__null__", TTL.DELEGATION)
@@ -1231,7 +1231,7 @@ async function getScholarNftOnChain(
 				Account,
 				Networks,
 				nativeToScVal,
-				scValToNative,
+				scValToNative: scValToNativeFn,
 			} = await import("@stellar/stellar-sdk")
 
 			const server = new rpc.Server(
@@ -1260,8 +1260,8 @@ async function getScholarNftOnChain(
 
 			let revoked = false
 			const simRevoked = await server.simulateTransaction(txRevoked)
-			if (!rpc.Api.isSimulationError(simRevoked) && simRevoked.result?.retval) {
-				revoked = scValToNative(simRevoked.result.retval) as boolean
+			if (!rpc.Api.isSimulationError(simRevoked) && (simRevoked as any).result?.retval) {
+				revoked = scValToNativeFn((simRevoked as any).result.retval) as boolean
 			}
 
 			// 2. Query get_metadata
@@ -1283,8 +1283,8 @@ async function getScholarNftOnChain(
 			let issuedAt: string | null = null
 
 			const simMeta = await server.simulateTransaction(txMeta)
-			if (!rpc.Api.isSimulationError(simMeta) && simMeta.result?.retval) {
-				const meta = scValToNative(simMeta.result.retval) as {
+			if (!rpc.Api.isSimulationError(simMeta) && (simMeta as any).result?.retval) {
+				const meta = scValToNativeFn((simMeta as any).result.retval) as {
 					owner: string
 					metadata_uri: string
 					issued_at: bigint
@@ -1480,7 +1480,7 @@ async function getProposalOnChain(proposalId: number): Promise<any | null> {
 	if (!SCHOLARSHIP_TREASURY_CONTRACT_ID) return null
 	try {
 		return await stellarRpcCircuitBreaker.call(async () => {
-			const { Contract, rpc, TransactionBuilder, Account, Networks, nativeToScVal, scValToNative } =
+			const { Contract, rpc, TransactionBuilder, Account, Networks, nativeToScVal, scValToNative: scValToNativeFn } =
 				await import("@stellar/stellar-sdk")
 			const server = new rpc.Server(
 				STELLAR_NETWORK === "mainnet" ? "https://soroban-rpc.stellar.org" : "https://soroban-testnet.stellar.org",
@@ -1496,8 +1496,8 @@ async function getProposalOnChain(proposalId: number): Promise<any | null> {
 				.build()
 			const sim = await server.simulateTransaction(tx)
 			if ((rpc.Api as any).isSimulationError(sim)) return null
-			const { scValToNative } = await import("@stellar/stellar-sdk")
-			return scValToNative(sim.result?.retval!)
+			if (!(sim as any).result?.retval) return null
+			return scValToNativeFn((sim as any).result.retval)
 		})
 	} catch (err) {
 		log.error({ err, proposalId }, "getProposalOnChain failed")
