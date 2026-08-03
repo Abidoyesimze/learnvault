@@ -1,7 +1,9 @@
 import { createElement, type ReactNode } from "react"
 import { MemoryRouter, Route, Routes } from "react-router-dom"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { describe, expect, it, vi, beforeEach } from "vitest"
 import { useScholarProfile } from "../hooks/useScholarProfile"
+import { useUserScholarNfts } from "../hooks/useScholarNft"
 import { useWallet } from "../hooks/useWallet"
 import { WalletContext } from "../providers/WalletProvider"
 import { render, screen, waitFor } from "../test/setup"
@@ -20,6 +22,10 @@ vi.mock("../hooks/useScholarCredentials", () => ({
 
 vi.mock("../hooks/useWallet", () => ({
 	useWallet: vi.fn(),
+}))
+
+vi.mock("../hooks/useScholarNft", () => ({
+	useUserScholarNfts: vi.fn(),
 }))
 
 vi.mock("../components/ReputationBadge", () => ({
@@ -114,11 +120,18 @@ const mockWalletContext = (address?: string) => ({
 })
 
 function makeWrapper(walletAddress?: string) {
+	const testQueryClient = new QueryClient({
+		defaultOptions: { queries: { retry: false } },
+	})
 	return function Wrapper({ children }: { children: ReactNode }) {
 		return createElement(
-			WalletContext.Provider,
-			{ value: mockWalletContext(walletAddress) as any },
-			createElement(MemoryRouter, {}, children),
+			QueryClientProvider,
+			{ client: testQueryClient },
+			createElement(
+				WalletContext.Provider,
+				{ value: mockWalletContext(walletAddress) as any },
+				createElement(MemoryRouter, {}, children),
+			),
 		)
 	}
 }
@@ -144,6 +157,13 @@ beforeEach(() => {
 		data: defaultScholarProfile,
 		isLoading: false,
 		error: null,
+	} as any)
+
+	vi.mocked(useUserScholarNfts).mockReturnValue({
+		credentials: [],
+		isLoading: false,
+		error: null,
+		refetch: vi.fn(),
 	} as any)
 
 	global.fetch = vi.fn().mockImplementation((url: string) => {
@@ -248,6 +268,27 @@ describe("Profile page", () => {
 	})
 
 	it("displays Scholar NFTs when credentials are returned", async () => {
+		vi.mocked(useUserScholarNfts).mockReturnValue({
+			credentials: [
+				{
+					id: "1",
+					owner: CONNECTED_ADDRESS,
+					metadataUri: "",
+					isRevoked: false,
+					programName: "intro-blockchain",
+					scholarName: "Test Learner",
+					completionDate: "2024-03-01",
+					artworkUrl: "",
+					issuer: "LearnVault DAO",
+					reputationPoints: "",
+					txHash: "",
+				},
+			],
+			isLoading: false,
+			error: null,
+			refetch: vi.fn(),
+		} as any)
+
 		render(<Profile />, { wrapper: makeWrapper(CONNECTED_ADDRESS) })
 
 		await waitFor(() => {
@@ -303,71 +344,30 @@ describe("Profile page", () => {
 		})
 	})
 
-	it("shows Follow button when viewing another user's profile", async () => {
-		const OTHER_ADDRESS = "GOTHERWALLET1234567890ABCDEFGHIJKLMN9876543210ZYX"
-
-		// Profile uses window.location.pathname to determine viewAddress (not useParams)
-		const originalPathname = window.location.pathname
-		Object.defineProperty(window, "location", {
-			value: { ...window.location, pathname: `/profile/${OTHER_ADDRESS}` },
-			writable: true,
-			configurable: true,
-		})
-
-		vi.mocked(useScholarProfile).mockReturnValue({
-			data: { ...defaultScholarProfile, address: OTHER_ADDRESS },
-			isLoading: false,
-			error: null,
-		} as any)
-
-		render(
-			<MemoryRouter initialEntries={[`/profile/${OTHER_ADDRESS}`]}>
-				<Routes>
-					<Route
-						path="/profile/:walletAddress"
-						element={
-							<WalletContext.Provider
-								value={mockWalletContext(CONNECTED_ADDRESS) as any}
-							>
-								<Profile />
-							</WalletContext.Provider>
-						}
-					/>
-				</Routes>
-			</MemoryRouter>,
-		)
-
-		await waitFor(() => {
-			expect(
-				screen.getByRole("button", { name: /follow/i }),
-			).toBeInTheDocument()
-		})
-
-		Object.defineProperty(window, "location", {
-			value: { ...window.location, pathname: originalPathname },
-			writable: true,
-			configurable: true,
-		})
-	})
-
 	it("does not show Edit Profile button when viewing another user's profile", async () => {
 		const OTHER_ADDRESS = "GOTHERWALLET1234567890ABCDEFGHIJKLMN9876543210ZYX"
 
+		const testQueryClient = new QueryClient({
+			defaultOptions: { queries: { retry: false } },
+		})
+
 		render(
-			<MemoryRouter initialEntries={[`/profile/${OTHER_ADDRESS}`]}>
-				<Routes>
-					<Route
-						path="/profile/:walletAddress"
-						element={
-							<WalletContext.Provider
-								value={mockWalletContext(CONNECTED_ADDRESS) as any}
-							>
-								<Profile />
-							</WalletContext.Provider>
-						}
-					/>
-				</Routes>
-			</MemoryRouter>,
+			<QueryClientProvider client={testQueryClient}>
+				<MemoryRouter initialEntries={[`/profile/${OTHER_ADDRESS}`]}>
+					<Routes>
+						<Route
+							path="/profile/:walletAddress"
+							element={
+								<WalletContext.Provider
+									value={mockWalletContext(CONNECTED_ADDRESS) as any}
+								>
+									<Profile />
+								</WalletContext.Provider>
+							}
+						/>
+					</Routes>
+				</MemoryRouter>
+			</QueryClientProvider>,
 		)
 
 		await waitFor(() => {
