@@ -1,5 +1,5 @@
 import confetti from "canvas-confetti"
-import React, { useContext, useEffect, useState } from "react"
+import React, { useCallback, useContext, useEffect, useState } from "react"
 import { Helmet } from "react-helmet"
 import { useTranslation } from "react-i18next"
 import { Link, useParams } from "react-router-dom"
@@ -69,7 +69,7 @@ const Profile: React.FC = () => {
 	const displayAddress = paramAddress || walletAddress
 
 	const { credentials, isLoading, error, refetch } =
-		useUserScholarNfts(walletAddress)
+		useUserScholarNfts(displayAddress)
 
 	const {
 		data: profile,
@@ -148,6 +148,19 @@ const Profile: React.FC = () => {
 		setLearningTimeLabel(formatDuration(summary.totalSeconds))
 	}, [])
 
+	// Sync profile data from API into local state
+	useEffect(() => {
+		if (profile) {
+			setViewAddress(displayAddress || "")
+			setStats({
+				lrnBalance: Number(profile.lrn_balance) || 0,
+				coursesCompleted: profile.enrolled_courses || 0,
+				reputationRank: null,
+				percentile: 0,
+			})
+		}
+	}, [profile, displayAddress])
+
 	const handleSaveProfile = useCallback(
 		async (formData: ProfileFormData) => {
 			if (!walletAddress) return
@@ -222,7 +235,7 @@ const Profile: React.FC = () => {
 			<div className="p-6 md:p-12 max-w-6xl mx-auto text-white animate-in fade-in slide-in-from-bottom-8 duration-1000">
 				<ErrorState
 					message={(profileError as any)?.message || error}
-					onRetry={fetchCredentials}
+					onRetry={refetch}
 				/>
 			</div>
 		)
@@ -299,16 +312,6 @@ const Profile: React.FC = () => {
 						</div>
 						<div className="w-px h-10 bg-white/10 hidden md:block" />
 						<div className="flex flex-wrap gap-4">
-							{displayAddress ? (
-								<ReputationBadge size="md" showBalance />
-							) : (
-								<div className="px-5 py-2 glass rounded-full border border-white/10 text-xs font-black uppercase tracking-widest text-white/40">
-									{t("wallet.connect")}
-								</div>
-							)}
-							<div className="px-5 py-2 glass rounded-full border border-white/10 text-xs font-black uppercase tracking-widest text-brand-cyan">
-								Learning Time: {learningTimeLabel}
-							</div>
 							{stats?.reputationRank && (
 								<div className="px-5 py-2 glass rounded-full border border-white/10 text-xs font-black uppercase tracking-widest text-brand-purple">
 									Rank #{stats.reputationRank}
