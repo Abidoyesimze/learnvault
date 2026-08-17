@@ -12,7 +12,7 @@ export default defineConfig({
 		nodePolyfills(),
 		wasm(),
 		VitePWA({
-			mode: "injectManifest",
+			strategies: "injectManifest",
 			srcDir: "src",
 			filename: "sw.ts",
 			registerType: "autoUpdate",
@@ -21,6 +21,13 @@ export default defineConfig({
 				globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
 				navigateFallback: "/index.html",
 				navigateFallbackDenylist: [/^\/api\//],
+			},
+			injectManifest: {
+				maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+				globIgnores: [
+					"**/contract-explorer-*.js",
+					"**/stellar_xdr_json_bg-*.wasm",
+				],
 			},
 			manifest: {
 				name: "LearnVault",
